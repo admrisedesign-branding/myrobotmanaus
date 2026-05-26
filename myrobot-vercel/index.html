@@ -1561,6 +1561,476 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
 .wpp-btn-f:hover { background:#16A34A; transform:translateY(-2px); box-shadow:0 0 40px rgba(34,197,94,.5); }
 @media(max-width:640px) { .form-card-dark{padding:24px 18px 28px} .field-row-f{grid-template-columns:1fr} .opt-grid-f{grid-template-columns:1fr} .opt-grid-3f{grid-template-columns:1fr 1fr} }
 
+/* ── MINI DEPOIMENTO DENTRO DO FORM ── */
+.form-mini-depo {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(108,63,255,0.22);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0 0 22px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.form-mini-depo-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: #FFF0EA; color: #FF4D00;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cabinet Grotesk', sans-serif;
+  font-size: 0.78rem; font-weight: 800; flex-shrink: 0;
+}
+.form-mini-depo-text {
+  flex: 1;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.78);
+  line-height: 1.55;
+  font-style: italic;
+}
+.form-mini-depo-text strong { color: #fff; font-style: normal; font-weight: 700; }
+.form-mini-depo-stars { color: #FFB23F; font-size: 11px; margin-bottom: 3px; letter-spacing: 1px; font-style: normal; }
+
+/* ══════════════════════════════════════════════════════════════════
+   V20 — EXPERIÊNCIA WHITE (volta para tema claro)
+   ══════════════════════════════════════════════════════════════════ */
+#experiencia {
+  background: var(--white) !important;
+}
+#experiencia::before,
+#experiencia::after {
+  display: none !important;
+  content: none !important;
+}
+#experiencia .section-kicker { color: var(--orange) !important; }
+#experiencia .section-kicker::before { background: var(--orange) !important; }
+#experiencia .section-h2 { color: var(--ink) !important; }
+#experiencia .section-p  { color: var(--muted) !important; }
+#experiencia .exp-feat-title { color: var(--ink) !important; }
+#experiencia .exp-feat-desc  { color: var(--muted) !important; }
+/* Feature icons voltam para os pastéis originais */
+#experiencia .exp-feat-icon {
+  background: var(--orange-pale) !important;
+  border: none !important;
+}
+#experiencia .exp-feat .exp-feat-icon-o { background: var(--orange-pale) !important; }
+#experiencia .exp-feat .exp-feat-icon-g { background: var(--green-pale) !important; }
+#experiencia .exp-feat .exp-feat-icon-p { background: var(--purple-pale) !important; }
+#experiencia .exp-feat .exp-feat-icon-b { background: var(--blue-pale) !important; }
+/* Card visual da direita — volta para branco com borda */
+#experiencia .exp-main-card {
+  background: var(--white) !important;
+  border: 1.5px solid var(--border) !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.07) !important;
+  backdrop-filter: none !important;
+}
+#experiencia .exp-stat-item {
+  background: var(--bg) !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+#experiencia .esi-num    { color: var(--ink) !important; }
+#experiencia .esi-num em { color: var(--orange) !important; }
+#experiencia .esi-label  { color: var(--muted) !important; }
+#experiencia .exp-proof-row {
+  background: var(--orange-pale) !important;
+  border: none !important;
+  border-radius: 12px !important;
+}
+#experiencia .epr-text  { color: var(--orange) !important; }
+#experiencia .epr-badge { background: var(--orange) !important; color: #fff !important; }
+#experiencia .exp-float {
+  background: var(--white) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--ink) !important;
+  backdrop-filter: none !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.1) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   V20 — DEPOIMENTOS ORANGE (fundo laranja)
+   ══════════════════════════════════════════════════════════════════ */
+#depoimentos {
+  background: var(--orange) !important;
+  position: relative;
+  overflow: hidden;
+}
+/* glows decorativos no fundo laranja */
+#depoimentos::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  top: -200px; left: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+#depoimentos::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+  bottom: -150px; right: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+#depoimentos .container { position: relative; z-index: 1; }
+#depoimentos .section-kicker { color: rgba(255,255,255,0.95) !important; }
+#depoimentos .section-kicker::before { background: rgba(255,255,255,0.95) !important; }
+#depoimentos .section-h2 { color: #ffffff !important; }
+#depoimentos .section-p  { color: rgba(255,255,255,0.85) !important; }
+/* Cards continuam brancos para contrastar */
+#depoimentos .depo-card {
+  background: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.4) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.10) !important;
+}
+#depoimentos .depo-card:hover {
+  border-color: #ffffff !important;
+  transform: translateY(-6px) !important;
+  box-shadow: 0 24px 60px rgba(0,0,0,0.18) !important;
+}
+#depoimentos .depo-stars .depo-star { color: var(--orange) !important; }
+#depoimentos .depo-text { color: var(--ink) !important; }
+#depoimentos .depo-quote-mark { color: var(--orange-pale) !important; }
+#depoimentos .depo-name { color: var(--ink) !important; }
+#depoimentos .depo-role { color: var(--muted) !important; }
+
+/* ══════════════════════════════════════════════════════════════════
+   V21 — FOOTER PURPLE (paleta da empresa)
+   ══════════════════════════════════════════════════════════════════ */
+footer {
+  background: #0F0B1A !important;
+  position: relative;
+  overflow: hidden;
+}
+/* glows roxos no fundo */
+footer::before {
+  content: '';
+  position: absolute;
+  width: 800px; height: 800px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,63,255,0.35) 0%, rgba(80,40,200,0.12) 40%, transparent 70%);
+  top: -300px; left: -200px;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+footer::after {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(108,63,255,0.22) 0%, transparent 70%);
+  bottom: -150px; right: -100px;
+  filter: blur(70px);
+  pointer-events: none;
+  z-index: 0;
+}
+footer .container { position: relative; z-index: 1; }
+
+/* CTA banner em cima do footer — tom de glass roxo */
+footer .cta-banner {
+  background: rgba(108,63,255,0.18) !important;
+  border: 1px solid rgba(108,63,255,0.45) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 0 60px rgba(108,63,255,0.20) !important;
+}
+footer .cta-banner::before {
+  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%) !important;
+}
+footer .cta-banner-text h3 { color: #ffffff !important; }
+footer .cta-banner-text p  { color: rgba(255,255,255,0.75) !important; }
+
+/* Cores dos textos do footer */
+footer .footer-logo-mark { background: var(--orange) !important; }
+footer .footer-brand-desc { color: rgba(255,255,255,0.65) !important; }
+footer .footer-col-title  { color: rgba(167,139,255,0.85) !important; }
+footer .footer-links a    { color: rgba(255,255,255,0.65) !important; }
+footer .footer-links a:hover { color: #ffffff !important; }
+footer .footer-contact .fc-item { color: rgba(255,255,255,0.65) !important; }
+footer .footer-contact .fc-item a { color: rgba(255,255,255,0.65) !important; }
+footer .footer-contact .fc-item a:hover { color: #ffffff !important; }
+
+/* Botões sociais */
+footer .fsoc {
+  background: rgba(108,63,255,0.15) !important;
+  border: 1px solid rgba(108,63,255,0.30) !important;
+  color: rgba(255,255,255,0.75) !important;
+}
+footer .fsoc:hover {
+  background: var(--purple) !important;
+  border-color: var(--purple) !important;
+  color: #ffffff !important;
+  box-shadow: 0 0 20px rgba(108,63,255,0.50) !important;
+}
+
+/* Linha divisória inferior */
+footer .footer-bottom {
+  border-top: 1px solid rgba(108,63,255,0.20) !important;
+}
+footer .footer-bottom-text { color: rgba(255,255,255,0.45) !important; }
+footer .footer-bottom-text a { color: #A78BFF !important; }
+
+/* ══════════════════════════════════════════════════════════════════
+   V22 — URGÊNCIA DARK PURPLE (coerência de marca)
+   ══════════════════════════════════════════════════════════════════ */
+#urgencia {
+  background: #0F0B1A !important;
+}
+/* substitui os blobs laranja por glows roxos */
+#urgencia .urg-blob {
+  background: radial-gradient(circle, rgba(108,63,255,0.30) 0%, transparent 70%) !important;
+  filter: blur(70px);
+}
+#urgencia .urg-blob-1 {
+  width: 700px !important; height: 700px !important;
+  top: -250px !important; left: -150px !important;
+}
+#urgencia .urg-blob-2 {
+  width: 500px !important; height: 500px !important;
+  bottom: -150px !important; right: -100px !important;
+  background: radial-gradient(circle, rgba(108,63,255,0.20) 0%, transparent 70%) !important;
+}
+/* o accent das listas e títulos pode continuar laranja — funciona melhor sobre roxo escuro */
+#urgencia .urg-left .section-kicker { color: #FF8C55 !important; }
+#urgencia .urg-left .section-kicker::before { background: #FF8C55 !important; }
+/* checks laranja sobre o fundo roxo */
+#urgencia .urg-check {
+  background: rgba(255,77,0,0.18) !important;
+  border-color: rgba(255,77,0,0.40) !important;
+}
+/* stats em glass roxo translúcido */
+#urgencia .urg-stat {
+  background: rgba(108,63,255,0.10) !important;
+  border: 1px solid rgba(108,63,255,0.25) !important;
+  backdrop-filter: blur(10px);
+}
+/* o card grande mantém laranja sólido — é o destaque visual da seção */
+#urgencia .urg-stat-big {
+  background: var(--orange) !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 40px rgba(255,77,0,0.35) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════════
+   V22 — AULA EXP / FORM ORANGE (energia máxima no momento da decisão)
+   Sobrescreve todos os V19 e SMART FORM que pintavam de roxo
+   ══════════════════════════════════════════════════════════════════ */
+#aula-exp {
+  background: var(--orange) !important;
+  position: relative;
+  overflow: hidden;
+}
+/* substitui os blobs roxos por glows brancos sutis */
+#aula-exp::before,
+#aula-exp::after,
+#aula-exp .ae-blob {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+/* novo blob branco translúcido pra dar movimento */
+#aula-exp > .container::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+  top: -200px; right: -150px;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+#aula-exp > .container::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
+  bottom: -100px; left: -100px;
+  filter: blur(60px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header do form (título e subtítulo brancos) */
+#aula-exp .form-header h2,
+#aula-exp .section-h2 { color: #ffffff !important; }
+#aula-exp .form-header p { color: rgba(255,255,255,0.90) !important; }
+
+/* Gradient line no topo do card (preto pra dar contraste sobre laranja) */
+#aula-exp .gradient-line-form {
+  background: linear-gradient(90deg, #0F0B1A 0%, #1F1530 50%, #0F0B1A 100%) !important;
+  box-shadow: 0 0 16px rgba(15,11,26,0.4), 0 0 8px rgba(15,11,26,0.3) !important;
+}
+
+/* Card do form — fica BRANCO sobre o laranja (contraste máximo, parece cartão flutuando) */
+#aula-exp .form-card-dark {
+  background: #ffffff !important;
+  border: 1px solid rgba(255,255,255,0.6) !important;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.20), 0 16px 40px rgba(0,0,0,0.10) !important;
+  backdrop-filter: none !important;
+  border-top: none !important;
+}
+
+/* Mini depoimento dentro do form — fundo laranja pálido */
+#aula-exp .form-mini-depo {
+  background: var(--orange-pale) !important;
+  border: 1px solid rgba(255,77,0,0.25) !important;
+}
+#aula-exp .form-mini-depo-text {
+  color: var(--ink) !important;
+  font-style: italic;
+}
+#aula-exp .form-mini-depo-text strong { color: var(--ink) !important; }
+#aula-exp .form-mini-depo-stars { color: var(--orange) !important; }
+
+/* Progress bar laranja */
+#aula-exp .progress-bar-wrap { background: rgba(0,0,0,0.08) !important; }
+#aula-exp .progress-bar-fill {
+  background: linear-gradient(90deg, var(--orange), #FF8C55) !important;
+}
+
+/* Stepper em tons de laranja */
+#aula-exp .step-circle {
+  background: rgba(0,0,0,0.03) !important;
+  border: 1.5px solid rgba(0,0,0,0.12) !important;
+  color: rgba(0,0,0,0.30) !important;
+}
+#aula-exp .step-circle.active {
+  background: var(--orange-pale) !important;
+  border-color: var(--orange) !important;
+  color: var(--orange) !important;
+  box-shadow: 0 0 14px rgba(255,77,0,0.35) !important;
+}
+#aula-exp .step-circle.done {
+  background: var(--orange) !important;
+  border-color: var(--orange) !important;
+  color: #ffffff !important;
+}
+#aula-exp .step-line { background: rgba(0,0,0,0.08) !important; }
+#aula-exp .step-line.done { background: var(--orange) !important; }
+#aula-exp .step-label { color: rgba(0,0,0,0.35) !important; }
+#aula-exp .step-label.active,
+#aula-exp .step-label.done { color: var(--orange) !important; }
+
+/* Títulos dentro de cada step */
+#aula-exp .step-title { color: var(--ink) !important; }
+#aula-exp .step-sub { color: var(--muted) !important; }
+
+/* Labels dos campos */
+#aula-exp .fl-f { color: var(--muted) !important; }
+
+/* Inputs do form */
+#aula-exp .fi-f {
+  background: var(--bg) !important;
+  border: 1.5px solid var(--border) !important;
+  color: var(--ink) !important;
+}
+#aula-exp .fi-f:focus {
+  border-color: var(--orange) !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(255,77,0,0.15) !important;
+}
+#aula-exp .fi-f::placeholder { color: var(--muted-2) !important; }
+#aula-exp select.fi-f option { background: #ffffff !important; color: var(--ink) !important; }
+#aula-exp select.fi-f {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M2.5 4.5l3.5 3.5 3.5-3.5' stroke='%236B7280' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 12px center !important;
+}
+
+/* Trilha tag — laranja claro */
+#aula-exp .trilha-tag-f {
+  background: var(--orange-pale) !important;
+  border-color: rgba(255,77,0,0.30) !important;
+  color: var(--orange) !important;
+}
+
+/* Opção cards (área de interesse, contato prévio, etc) */
+#aula-exp .opt-card-f {
+  background: var(--bg) !important;
+  border: 1.5px solid var(--border) !important;
+}
+#aula-exp .opt-card-f:hover {
+  border-color: rgba(255,77,0,0.40) !important;
+  background: var(--orange-pale) !important;
+}
+#aula-exp .opt-card-f.selected {
+  border-color: var(--orange) !important;
+  background: var(--orange-pale) !important;
+  box-shadow: 0 0 14px rgba(255,77,0,0.20) !important;
+}
+#aula-exp .opt-dot-f { border-color: rgba(0,0,0,0.20) !important; }
+#aula-exp .opt-card-f.selected .opt-dot-f {
+  border-color: var(--orange) !important;
+  background: var(--orange) !important;
+}
+#aula-exp .opt-label-f { color: var(--muted) !important; }
+#aula-exp .opt-card-f.selected .opt-label-f { color: var(--ink) !important; }
+
+/* Moment cards (Step 2) */
+#aula-exp .moment-card-f {
+  background: var(--bg) !important;
+  border: 1.5px solid var(--border) !important;
+}
+#aula-exp .moment-card-f:hover {
+  border-color: rgba(255,77,0,0.40) !important;
+  background: var(--orange-pale) !important;
+}
+#aula-exp .moment-card-f.selected {
+  border-color: var(--orange) !important;
+  background: var(--orange-pale) !important;
+  box-shadow: 0 0 14px rgba(255,77,0,0.20) !important;
+}
+#aula-exp .moment-title-f { color: var(--muted) !important; }
+#aula-exp .moment-card-f.selected .moment-title-f { color: var(--ink) !important; }
+#aula-exp .moment-desc-f { color: var(--muted-2) !important; }
+
+/* Botões de navegação */
+#aula-exp .btn-back-f {
+  color: var(--muted) !important;
+  border: 1.5px solid var(--border) !important;
+  background: transparent !important;
+}
+#aula-exp .btn-back-f:hover {
+  color: var(--ink) !important;
+  border-color: var(--muted) !important;
+}
+/* Botão NEXT — preto sólido pra contrastar com o card branco */
+#aula-exp .btn-next-f {
+  background: var(--ink) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+#aula-exp .btn-next-f:hover {
+  background: #1F1530 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+}
+
+/* Botão submit principal (Confirmar pelo WhatsApp) */
+#aula-exp .btn-submit {
+  background: var(--ink) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+}
+#aula-exp .btn-submit:hover {
+  background: #1F1530 !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35) !important;
+}
+
+/* Tela de sucesso */
+#aula-exp .success-title-f { color: var(--ink) !important; }
+#aula-exp .success-sub-f { color: var(--muted) !important; }
+#aula-exp .success-icon-f {
+  background: rgba(34,197,94,0.15) !important;
+  border-color: rgba(34,197,94,0.40) !important;
+}
+
+/* Lock de privacidade abaixo do form */
+#aula-exp .ae-form-centered-inner > p:last-of-type {
+  color: rgba(255,255,255,0.85) !important;
+}
+
 </style>
 </head>
 <body>
@@ -1572,6 +2042,7 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   <a href="#cursos" onclick="closeMob()">Cursos</a>
   <a href="#trilhas" onclick="closeMob()">Trilhas</a>
   <a href="#depoimentos" onclick="closeMob()">Depoimentos</a>
+  <a href="#faq" onclick="closeMob()">Dúvidas</a>
   <a href="#aula-exp" onclick="closeMob()" style="color:var(--orange)">Aula Grátis</a>
 </div>
 
@@ -1588,6 +2059,7 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
         <li><a href="#cursos">Cursos</a></li>
         <li><a href="#trilhas">Trilhas</a></li>
         <li><a href="#depoimentos">Depoimentos</a></li>
+        <li><a href="#faq">Dúvidas</a></li>
       </ul>
       <a href="#aula-exp" class="nav-btn">Aula experimental grátis</a>
       <button class="nav-hamburger" onclick="openMob()">
@@ -1723,10 +2195,6 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   </div>
 </section>
 
-    <!-- duplicate -->
-  </div>
-</div>
-
 <!-- ─── URGÊNCIA ─── -->
 <section id="urgencia">
   <div class="urg-blob urg-blob-1"></div>
@@ -1825,7 +2293,106 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   </div>
 </section>
 
-<!-- ─── TRILHAS ─── -->
+<!-- ─── CURSOS (movido para antes de Trilhas — interesse antes da segmentação) ─── -->
+<section id="cursos">
+  <div class="container">
+    <div class="cursos-header reveal">
+      <div>
+        <div class="section-kicker">Nossos cursos</div>
+        <h2 class="section-h2" style="margin-bottom:0">Escolha o caminho do seu filho</h2>
+      </div>
+      <a href="#aula-exp" class="btn-ghost">Ver todos os cursos →</a>
+    </div>
+    <div class="cursos-grid">
+      <a href="#aula-exp" class="curso-card reveal">
+        <div class="curso-thumb" style="--c1:#FF4D00;--c2:#FF7A3D;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">🤖</div>
+          <div class="curso-thumb-name">Robótica</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">Monte, programe e controle robôs reais. Hardware profissional, projetos reais e competições.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#FFF0EA;color:#FF4D00;">Todos os níveis</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      <a href="#aula-exp" class="curso-card reveal reveal-d1">
+        <div class="curso-thumb" style="--c1:#0070F3;--c2:#38BDF8;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">💻</div>
+          <div class="curso-thumb-name">Programação</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">De Scratch a Python. Lógica, algoritmos e desenvolvimento do básico ao avançado.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#EAF3FF;color:#0070F3;">Todos os níveis</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      <a href="#aula-exp" class="curso-card reveal reveal-d2">
+        <div class="curso-thumb" style="--c1:#6C3FFF;--c2:#9B7FFF;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">🧠</div>
+          <div class="curso-thumb-name">Inteligência Artificial</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">Machine learning, redes neurais e IA aplicada a projetos do mundo real.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#F0ECFF;color:#6C3FFF;">Intermediário+</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      <a href="#aula-exp" class="curso-card reveal">
+        <div class="curso-thumb" style="--c1:#FF6B00;--c2:#FFAB40;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">🎮</div>
+          <div class="curso-thumb-name">Desenvolvimento de Jogos</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">Crie games 2D e 3D com código real. Design, lógica e programação de forma criativa.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#FFF5E6;color:#FF6B00;">Intermediário</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      <a href="#aula-exp" class="curso-card reveal reveal-d1">
+        <div class="curso-thumb" style="--c1:#00C566;--c2:#00A855;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">⚡</div>
+          <div class="curso-thumb-name">Automação e IoT</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">Arduino, sensores e sistemas conectados. Transforme o ambiente ao redor com tecnologia.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#E6FAF2;color:#00C566;">Intermediário</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+      <a href="#aula-exp" class="curso-card reveal reveal-d2">
+        <div class="curso-thumb" style="--c1:#E91E8C;--c2:#FF6BB5;">
+          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
+          <div class="curso-thumb-icon">🌐</div>
+          <div class="curso-thumb-name">Desenvolvimento Web</div>
+        </div>
+        <div class="curso-body">
+          <div class="curso-body-desc">Sites e aplicações completas. HTML, CSS, JavaScript e as ferramentas do mercado.</div>
+          <div class="curso-meta">
+            <span class="curso-badge" style="background:#FDE8F3;color:#E91E8C;">Iniciante+</span>
+            <span class="curso-arrow">→</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── TRILHAS (movido para depois de Cursos — segmentação por idade) ─── -->
 <section id="trilhas">
   <div class="container">
     <div style="text-align:center;max-width:600px;margin:0 auto 56px;" class="reveal">
@@ -1933,105 +2500,6 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   </div>
 </section>
 
-<!-- ─── CURSOS ─── -->
-<section id="cursos">
-  <div class="container">
-    <div class="cursos-header reveal">
-      <div>
-        <div class="section-kicker">Nossos cursos</div>
-        <h2 class="section-h2" style="margin-bottom:0">Escolha o caminho do seu filho</h2>
-      </div>
-      <a href="#aula-exp" class="btn-ghost">Ver todos os cursos →</a>
-    </div>
-    <div class="cursos-grid">
-      <a href="#aula-exp" class="curso-card reveal">
-        <div class="curso-thumb" style="--c1:#FF4D00;--c2:#FF7A3D;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">🤖</div>
-          <div class="curso-thumb-name">Robótica</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">Monte, programe e controle robôs reais. Hardware profissional, projetos reais e competições.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#FFF0EA;color:#FF4D00;">Todos os níveis</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-      <a href="#aula-exp" class="curso-card reveal reveal-d1">
-        <div class="curso-thumb" style="--c1:#0070F3;--c2:#38BDF8;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">💻</div>
-          <div class="curso-thumb-name">Programação</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">De Scratch a Python. Lógica, algoritmos e desenvolvimento do básico ao avançado.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#EAF3FF;color:#0070F3;">Todos os níveis</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-      <a href="#aula-exp" class="curso-card reveal reveal-d2">
-        <div class="curso-thumb" style="--c1:#6C3FFF;--c2:#9B7FFF;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">🧠</div>
-          <div class="curso-thumb-name">Inteligência Artificial</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">Machine learning, redes neurais e IA aplicada a projetos do mundo real.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#F0ECFF;color:#6C3FFF;">Intermediário+</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-      <a href="#aula-exp" class="curso-card reveal">
-        <div class="curso-thumb" style="--c1:#FF6B00;--c2:#FFAB40;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">🎮</div>
-          <div class="curso-thumb-name">Desenvolvimento de Jogos</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">Crie games 2D e 3D com código real. Design, lógica e programação de forma criativa.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#FFF5E6;color:#FF6B00;">Intermediário</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-      <a href="#aula-exp" class="curso-card reveal reveal-d1">
-        <div class="curso-thumb" style="--c1:#00C566;--c2:#00A855;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">⚡</div>
-          <div class="curso-thumb-name">Automação e IoT</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">Arduino, sensores e sistemas conectados. Transforme o ambiente ao redor com tecnologia.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#E6FAF2;color:#00C566;">Intermediário</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-      <a href="#aula-exp" class="curso-card reveal reveal-d2">
-        <div class="curso-thumb" style="--c1:#E91E8C;--c2:#FF6BB5;">
-          <div class="ct-bg"></div><div class="ct-circle"></div><div class="ct-circle-2"></div>
-          <div class="curso-thumb-icon">🌐</div>
-          <div class="curso-thumb-name">Desenvolvimento Web</div>
-        </div>
-        <div class="curso-body">
-          <div class="curso-body-desc">Sites e aplicações completas. HTML, CSS, JavaScript e as ferramentas do mercado.</div>
-          <div class="curso-meta">
-            <span class="curso-badge" style="background:#FDE8F3;color:#E91E8C;">Iniciante+</span>
-            <span class="curso-arrow">→</span>
-          </div>
-        </div>
-      </a>
-    </div>
-  </div>
-</section>
-
 <!-- ─── EXPERIÊNCIA ─── -->
 <section id="experiencia">
   <div class="container">
@@ -2127,7 +2595,65 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   </div>
 </section>
 
-<!-- ─── AULA EXP ─── -->
+<!-- ─── FAQ (movido para antes do formulário — derruba objeções antes de pedir o contato) ─── -->
+<section id="faq">
+  <div class="container">
+    <div class="faq-cols">
+      <div class="faq-left reveal">
+        <div class="section-kicker">Dúvidas</div>
+        <h2 class="section-h2">Perguntas frequentes</h2>
+        <p class="section-p" style="margin-bottom:32px;">Respondemos tudo antes de você precisar perguntar. Ainda tem dúvidas? Fale com a gente no WhatsApp.</p>
+        <a href="https://wa.me/559200000000" target="_blank" class="btn-orange">Falar no WhatsApp →</a>
+      </div>
+      <div class="faq-list reveal reveal-d1">
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">A partir de qual idade meu filho pode começar?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">A My Robot atende crianças a partir de 6 anos com nossa trilha de Exploradores, usando programação visual e robótica lúdica. Cada faixa etária tem uma metodologia adaptada. Nunca é cedo demais para começar.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">Meu filho precisa ter experiência prévia?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">Não. Nenhuma experiência é necessária. Começamos do zero e avançamos no ritmo de cada aluno. A maioria dos nossos melhores alunos nunca havia tocado em código antes de entrar na My Robot.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">Como funcionam as aulas? Qual a duração?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">As aulas têm 1h30 a 2h de duração, com frequência semanal ou bissemanal. São aulas práticas, com projetos reais. Turmas reduzidas (máximo 8 alunos) para garantir atenção individualizada.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">IA é mesmo adequada para crianças?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">Sim. Trabalhamos com conceitos fundamentais de forma visual e lúdica: o que é uma IA, como ela aprende, e como criar projetos simples de machine learning. Assim como ensinamos matemática antes de cálculo.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">Qual é a metodologia pedagógica?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">Usamos Project-Based Learning. 70% das aulas são práticas, onde os alunos constroem projetos reais. Combinamos gamificação, desafios progressivos e portfólio. O objetivo é que cada aluno saia com algo concreto para mostrar.</div></div>
+        </div>
+        <div class="faq-item">
+          <div class="faq-q" onclick="toggleF(this)">
+            <span class="faq-q-text">Como a My Robot se diferencia de outras escolas?</span>
+            <span class="faq-toggle">+</span>
+          </div>
+          <div class="faq-answer"><div class="faq-answer-inner">Somos a escola de tecnologia mais completa de Manaus, com currículo atualizado com as tecnologias do mercado global. Turmas pequenas, ambiente de inovação real, professores especializados e foco em projetos práticos.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── AULA EXP (movido para depois do FAQ — agora é o último passo antes do footer) ─── -->
 <section id="aula-exp">
   <!-- purple glow blobs -->
   <div class="ae-blob ae-blob-1"></div>
@@ -2147,6 +2673,16 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
         <!-- GRADIENT TOP LINE -->
         <div class="gradient-line-form"></div>
         <div class="form-card-dark">
+
+          <!-- MINI DEPOIMENTO (prova social no momento da decisão) -->
+          <div class="form-mini-depo">
+            <div class="form-mini-depo-av">KS</div>
+            <div class="form-mini-depo-text">
+              <div class="form-mini-depo-stars">★★★★★</div>
+              "Meu filho ganhou a olimpíada regional de robótica. Desenvolveu uma mentalidade que vai durar a vida toda."<br>
+              <strong>— Karoline Souza</strong>, mãe do Mateus
+            </div>
+          </div>
 
           <!-- PROGRESS BAR -->
           <div class="progress-bar-wrap">
@@ -2352,64 +2888,6 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
   </div>
 </section>
 
-<!-- ─── FAQ ─── -->
-<section id="faq">
-  <div class="container">
-    <div class="faq-cols">
-      <div class="faq-left reveal">
-        <div class="section-kicker">Dúvidas</div>
-        <h2 class="section-h2">Perguntas frequentes</h2>
-        <p class="section-p" style="margin-bottom:32px;">Respondemos tudo antes de você precisar perguntar. Ainda tem dúvidas? Fale com a gente no WhatsApp.</p>
-        <a href="https://wa.me/559200000000" target="_blank" class="btn-orange">Falar no WhatsApp →</a>
-      </div>
-      <div class="faq-list reveal reveal-d1">
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">A partir de qual idade meu filho pode começar?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">A My Robot atende crianças a partir de 6 anos com nossa trilha de Exploradores, usando programação visual e robótica lúdica. Cada faixa etária tem uma metodologia adaptada. Nunca é cedo demais para começar.</div></div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">Meu filho precisa ter experiência prévia?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">Não. Nenhuma experiência é necessária. Começamos do zero e avançamos no ritmo de cada aluno. A maioria dos nossos melhores alunos nunca havia tocado em código antes de entrar na My Robot.</div></div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">Como funcionam as aulas? Qual a duração?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">As aulas têm 1h30 a 2h de duração, com frequência semanal ou bissemanal. São aulas práticas, com projetos reais. Turmas reduzidas (máximo 8 alunos) para garantir atenção individualizada.</div></div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">IA é mesmo adequada para crianças?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">Sim. Trabalhamos com conceitos fundamentais de forma visual e lúdica: o que é uma IA, como ela aprende, e como criar projetos simples de machine learning. Assim como ensinamos matemática antes de cálculo.</div></div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">Qual é a metodologia pedagógica?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">Usamos Project-Based Learning. 70% das aulas são práticas, onde os alunos constroem projetos reais. Combinamos gamificação, desafios progressivos e portfólio. O objetivo é que cada aluno saia com algo concreto para mostrar.</div></div>
-        </div>
-        <div class="faq-item">
-          <div class="faq-q" onclick="toggleF(this)">
-            <span class="faq-q-text">Como a My Robot se diferencia de outras escolas?</span>
-            <span class="faq-toggle">+</span>
-          </div>
-          <div class="faq-answer"><div class="faq-answer-inner">Somos a escola de tecnologia mais completa de Manaus, com currículo atualizado com as tecnologias do mercado global. Turmas pequenas, ambiente de inovação real, professores especializados e foco em projetos práticos.</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ─── FOOTER ─── -->
 <footer>
   <div class="container">
@@ -2444,6 +2922,7 @@ select.fi-f option { background:#0F0A1E; color:#fff; }
         <div class="footer-col-title">Escola</div>
         <ul class="footer-links">
           <li><a href="#urgencia">O Futuro</a></li>
+          <li><a href="#cursos">Cursos</a></li>
           <li><a href="#trilhas">Trilhas por Idade</a></li>
           <li><a href="#experiencia">Estrutura</a></li>
           <li><a href="#depoimentos">Depoimentos</a></li>
