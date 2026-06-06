@@ -3136,7 +3136,7 @@ function submitForm() {
   const st=document.getElementById('successTitle'); if(st) st.textContent='Perfeito, '+rn.split(' ')[0]+'!';
   const ss=document.getElementById('successSub'); if(ss) ss.textContent=mom==='matricular'?'Sua vaga está sendo reservada! Confirme agora pelo WhatsApp.':'Aula experimental agendada! Confirme pelo WhatsApp.';
   const sb=document.getElementById('scoreBadge'); if(sb){sb.className='score-badge-f '+lead.cls;sb.textContent=lead.e+' '+lead.l;}
-  const wppNum='559292000000'; // ← TROQUE PELO NÚMERO REAL
+  const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
   const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg);
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
   if(score>=70) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
