@@ -3113,6 +3113,21 @@ function submitForm() {
 *🔗 Origem:* ${orig}`;
   msg+=`
 *🏷️ Score:* ${score}pts — ${lead.e} ${lead.l}`;
+  // Cria o lead na Kommo (não trava a abertura do WhatsApp)
+  fetch('/api/kommo-lead', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      rn, wn, em, fn, fi,
+      area: areaL,
+      mom: momL,
+      trilha,
+      bairro,
+      orig,
+      score,
+      categoria: lead.l
+    })
+  }).catch(e => console.warn('Kommo falhou, lead seguiu pelo WhatsApp:', e));
   localStorage.setItem('myrobot_lead_'+Date.now(), JSON.stringify({timestamp:new Date().toISOString(),rn,wn,em,fn,fi,area,obj,mom,cont,bairro,orig,score,leadLabel:lead.l}));
   document.querySelectorAll('.form-step').forEach(s=>s.classList.remove('active'));
   const prog=document.querySelector('.progress-bar-wrap'); if(prog) prog.style.display='none';
