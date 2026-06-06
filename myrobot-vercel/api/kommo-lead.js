@@ -76,7 +76,6 @@ export default async function handler(req, res) {
 
     const payload = [{
       name: `Site — ${b.fn || "filho(a)"} (${b.rn || "responsável"})`,
-      price: score,
       pipeline_id: PIPELINE_ID,
       status_id: STATUS_ID,
       custom_fields_values: leadFields,
