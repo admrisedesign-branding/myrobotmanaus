@@ -76,10 +76,15 @@ async function patchLead(id, token, score, categoriaEnumId) {
   return r.json();
 }
 
+// Considera válido só um ID numérico (ignora macro não-substituída como "{{lead.id}}")
+function isValidId(v) {
+  return v != null && /^\d+$/.test(String(v).trim());
+}
+
 // Acha o lead id em vários formatos possíveis de webhook
 function extractLeadId(body, query) {
-  if (query && query.lead_id) return query.lead_id;           // ?lead_id=123 (recomendado)
-  if (body && body.lead_id) return body.lead_id;
+  if (query && isValidId(query.lead_id)) return query.lead_id; // ?lead_id=123
+  if (body && isValidId(body.lead_id)) return body.lead_id;
   // formato webhook padrão da Kommo (aninhado)
   const paths = [
     ['leads', 'status', '0', 'id'],
@@ -94,9 +99,9 @@ function extractLeadId(body, query) {
     }
     if (ok && node) return node;
   }
-  // chaves "achatadas" (Vercel às vezes não aninha)
-  for (const k of ['leads[status][0][id]', 'leads[update][0][id]', 'leads[add][0][id]']) {
-    if (body && body[k]) return body[k];
+  // chaves "achatadas" (Vercel às vezes não aninha) — formato confirmado nesta conta
+  for (const k of ['leads[add][0][id]', 'leads[status][0][id]', 'leads[update][0][id]']) {
+    if (body && isValidId(body[k])) return body[k];
   }
   return null;
 }
