@@ -2832,14 +2832,14 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
                   <select class="fi-f" id="bairro">
                     <option value="">Selecione (opcional)</option>
                     <optgroup label="Zona Sul">
-                      <option>Adrianópolis</option><option>Ponta Negra</option>
-                      <option>Tarumã</option><option>Aleixo</option>
-                      <option>Parque 10</option><option>Vieiralves</option>
-                      <option>Nossa Senhora das Graças</option>
+                      <option>Adrianópolis</option><option>Vieiralves</option>
+                      <option>Nossa Senhora das Graças</option><option>Parque 10</option>
+                      <option>Aleixo</option><option>Flores</option><option>Dom Pedro</option>
+                      <option>Ponta Negra</option><option>Tarumã</option>
                     </optgroup>
                     <optgroup label="Centro-Sul">
                       <option>Centro</option><option>Chapada</option>
-                      <option>Flores</option><option>Petrópolis</option>
+                      <option>São Jorge</option><option>Petrópolis</option>
                     </optgroup>
                     <optgroup label="Zona Norte">
                       <option>Cidade Nova</option><option>Monte das Oliveiras</option>
@@ -3084,9 +3084,9 @@ function calcScore() {
   const orig=document.getElementById('origem')?.value;
   const bairro=document.getElementById('bairro')?.value;
   const email=document.getElementById('email')?.value?.trim();
-  if(mom==='matricular') s+=50; else if(mom==='aula_exp') s+=30; else if(mom==='pesquisando') s+=10; else s+=5;
-  if(['Adrianópolis','Ponta Negra','Tarumã','Aleixo','Parque 10','Vieiralves','Nossa Senhora das Graças','Chapada'].includes(bairro)) s+=20;
-  if(orig==='indicacao') s+=15; else if(orig==='google') s+=8; else if(orig==='instagram') s+=5;
+  if(mom==='matricular') s+=50; else if(mom==='aula_exp') s+=40; else if(mom==='pesquisando') s+=20; else s+=10;
+  if(['Adrianópolis','Vieiralves','Nossa Senhora das Graças','Parque 10','Aleixo','Flores','Dom Pedro','Chapada','Ponta Negra','São Jorge','Centro'].includes(bairro)) s+=20;
+  if(orig==='indicacao') s+=20; else if(orig==='google') s+=10; else if(orig==='instagram') s+=8;
   if(email) s+=10;
   return s;
 }
@@ -3110,7 +3110,7 @@ function submitForm() {
   const objL={futuro:'Preparar para o futuro',raciocinio:'Raciocínio lógico',criatividade:'Criatividade',telas:'Reduzir telas',oportunidades:'Oportunidades profissionais',ama_tech:'Já ama tecnologia'}[obj]||obj;
   const contL={nunca:'Nunca programou',usa:'Usa apps/jogos',tentou:'Já tentou programar',faz_curso:'Já faz curso de tech'}[cont]||cont;
   const score=calcScore();
-  const lead=score>=70?{e:'🔥',l:'Lead Quente',cls:'sbhot'}:score>=30?{e:'🌡️',l:'Lead Morno',cls:'sbwarm'}:{e:'❄️',l:'Lead Frio',cls:'sbcold'};
+  const lead=score>=55?{e:'🔥',l:'Lead Quente',cls:'sbhot'}:score>=25?{e:'🌡️',l:'Lead Morno',cls:'sbwarm'}:{e:'❄️',l:'Lead Frio',cls:'sbcold'};
   const momTexto={matricular:'gostaria de matricular meu filho',aula_exp:'gostaria de agendar uma aula experimental exclusiva',pesquisando:'estou conhecendo as opções de cursos',conhecer:'gostaria de saber mais sobre os cursos'}[mom]||'tenho interesse nos cursos';
   const msg=`Olá, My Robot Manaus! Me chamo ${rn} e ${momTexto}.\n\nMeu filho se chama ${fn} e tem ${fi} anos.\n\nPode me dar mais informações?`;
   // Cria o lead na Kommo (não trava a abertura do WhatsApp)
@@ -3139,7 +3139,7 @@ function submitForm() {
   const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
   const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg);
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
-  if(score>=70) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
+  if(score>=55) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
 }
 // WhatsApp input mask
 const wppInput=document.getElementById('whatsapp');
