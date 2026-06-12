@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Feedback da Aula — My Robot Manaus</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,sans-serif;background:#F7F7F7;color:#111;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:24px 16px}
+
+.logo-bar{text-align:center;margin-bottom:28px;margin-top:8px}
+.logo-bar img{height:44px;width:auto}
+.logo-bar .brand{font-size:13pt;font-weight:900;color:#FF5500;letter-spacing:-.01em}
+.logo-bar .sub{font-size:8pt;color:#aaa;text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+
+.card{background:#fff;border-radius:16px;box-shadow:0 2px 20px rgba(0,0,0,.07);padding:32px 28px;max-width:480px;width:100%}
+
+/* Step indicators */
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:28px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:#E5E7EB;transition:.3s}
+.step-dot.active{background:#FF5500;width:24px;border-radius:4px}
+.step-dot.done{background:#16A34A}
+
+h1{font-size:16pt;font-weight:900;color:#111;line-height:1.2;margin-bottom:6px}
+.subtitle{font-size:9pt;color:#888;line-height:1.6;margin-bottom:24px}
+
+/* Stars */
+.star-group{display:flex;gap:8px;justify-content:center;margin-bottom:24px}
+.star-btn{font-size:32pt;cursor:pointer;transition:.15s;filter:grayscale(1) opacity(.4);line-height:1;background:none;border:none;padding:4px}
+.star-btn.active{filter:none;transform:scale(1.1)}
+.star-label{text-align:center;font-size:8.5pt;color:#888;margin-top:-16px;margin-bottom:20px;min-height:18px}
+
+/* Options */
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.opt{border:1.5px solid #E5E7EB;border-radius:8px;padding:10px 12px;cursor:pointer;transition:.2s;font-size:8.5pt;color:#555;text-align:center;font-weight:500}
+.opt:hover{border-color:#FFCDB2;background:#FFF8F5}
+.opt.selected{border-color:#FF5500;background:#FFF3EE;color:#FF5500;font-weight:700}
+
+/* Textarea */
+textarea{width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:12px;font-size:9pt;font-family:inherit;resize:vertical;min-height:80px;transition:.2s;outline:none;color:#111}
+textarea:focus{border-color:#FF5500}
+.char-count{font-size:7.5pt;color:#bbb;text-align:right;margin-top:4px;margin-bottom:16px}
+
+/* Input */
+.inp{width:100%;border:1.5px solid #E5E7EB;border-radius:8px;padding:12px;font-size:9pt;font-family:inherit;transition:.2s;outline:none;color:#111;margin-bottom:12px}
+.inp:focus{border-color:#FF5500}
+label.lbl{font-size:8pt;font-weight:600;color:#555;display:block;margin-bottom:5px}
+
+/* Buttons */
+.btn-primary{width:100%;background:#FF5500;color:#fff;border:none;border-radius:10px;padding:14px;font-size:10pt;font-weight:700;cursor:pointer;transition:.2s;font-family:inherit}
+.btn-primary:hover{background:#E04A00}
+.btn-primary:disabled{background:#ccc;cursor:not-allowed}
+.btn-secondary{width:100%;background:#fff;color:#888;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px;font-size:9pt;font-weight:600;cursor:pointer;transition:.2s;font-family:inherit;margin-top:8px}
+.btn-secondary:hover{border-color:#ccc;color:#555}
+
+/* Google CTA */
+.google-cta{background:linear-gradient(135deg,#FFF8F5,#FFF3EE);border:2px solid #FF5500;border-radius:12px;padding:20px;text-align:center;margin-bottom:20px}
+.google-cta .stars{font-size:22pt;margin-bottom:6px}
+.google-cta h3{font-size:12pt;font-weight:800;color:#111;margin-bottom:6px}
+.google-cta p{font-size:8.5pt;color:#777;line-height:1.6;margin-bottom:16px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#fff;border:1.5px solid #E5E7EB;border-radius:10px;padding:14px;font-size:10pt;font-weight:700;cursor:pointer;text-decoration:none;color:#111;transition:.2s;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.btn-google:hover{box-shadow:0 3px 12px rgba(0,0,0,.12);border-color:#ccc}
+.btn-google svg{flex-shrink:0}
+
+/* Success screen */
+.success-icon{font-size:48pt;text-align:center;margin-bottom:12px}
+.success-msg{font-size:13pt;font-weight:800;color:#111;text-align:center;margin-bottom:8px}
+.success-sub{font-size:9pt;color:#888;text-align:center;line-height:1.6;margin-bottom:24px}
+
+/* Progress bar */
+.progress{height:3px;background:#F0F0F0;border-radius:2px;margin-bottom:24px;overflow:hidden}
+.progress-bar{height:100%;background:#FF5500;border-radius:2px;transition:.4s}
+
+/* Step visibility */
+.step{display:none}
+.step.visible{display:block}
+
+@media(max-width:480px){
+  .card{padding:24px 20px}
+  h1{font-size:14pt}
+  .star-btn{font-size:28pt}
+}
+</style>
+</head>
+<body>
+
+<div class="logo-bar">
+  <div class="brand">🤖 My Robot Manaus</div>
+  <div class="sub">Escola de Robótica e Programação</div>
+</div>
+
+<div class="card">
+  <div class="progress"><div class="progress-bar" id="progressBar" style="width:33%"></div></div>
+  <div class="steps">
+    <div class="step-dot active" id="dot1"></div>
+    <div class="step-dot" id="dot2"></div>
+    <div class="step-dot" id="dot3"></div>
+  </div>
+
+  <!-- ── STEP 1: Avaliação geral + pergunta ── -->
+  <div class="step visible" id="step1">
+    <h1>Como foi a aula experimental? 🤖</h1>
+    <p class="subtitle">Sua opinião ajuda a My Robot a melhorar a experiência para todas as crianças.</p>
+
+    <div class="star-group" id="starGroup">
+      <button class="star-btn" data-val="1" onclick="setStar(1)">⭐</button>
+      <button class="star-btn" data-val="2" onclick="setStar(2)">⭐</button>
+      <button class="star-btn" data-val="3" onclick="setStar(3)">⭐</button>
+      <button class="star-btn" data-val="4" onclick="setStar(4)">⭐</button>
+      <button class="star-btn" data-val="5" onclick="setStar(5)">⭐</button>
+    </div>
+    <div class="star-label" id="starLabel">Selecione uma nota</div>
+
+    <p class="lbl">O que mais chamou atenção do seu filho?</p>
+    <div class="opts" id="opts1">
+      <div class="opt" onclick="toggleOpt(this)">🤖 Montar o robô</div>
+      <div class="opt" onclick="toggleOpt(this)">💻 Programar</div>
+      <div class="opt" onclick="toggleOpt(this)">👨‍🏫 O professor</div>
+      <div class="opt" onclick="toggleOpt(this)">🏫 O espaço</div>
+      <div class="opt" onclick="toggleOpt(this)">👫 Os colegas</div>
+      <div class="opt" onclick="toggleOpt(this)">🏆 O desafio</div>
+    </div>
+
+    <button class="btn-primary" id="btn1" onclick="goStep(2)" disabled>Continuar →</button>
+  </div>
+
+  <!-- ── STEP 2: Comentário + nome ── -->
+  <div class="step" id="step2">
+    <h1>Conta mais para a gente 💬</h1>
+    <p class="subtitle">O que você achou da experiência? Qualquer detalhe nos ajuda muito.</p>
+
+    <label class="lbl">Seu comentário (opcional)</label>
+    <textarea id="comentario" placeholder="Ex: Meu filho adorou montar o robô e já quer voltar na semana que vem..." oninput="updateChar()"></textarea>
+    <div class="char-count"><span id="charCount">0</span>/300</div>
+
+    <label class="lbl">Seu nome <span style="color:#FF5500">*</span></label>
+    <input class="inp" type="text" id="nomeResp" placeholder="Ex: Maria Silva" oninput="checkStep2()">
+
+    <label class="lbl">Nome do seu filho(a)</label>
+    <input class="inp" type="text" id="nomeFilho" placeholder="Ex: João, 9 anos">
+
+    <button class="btn-primary" id="btn2" onclick="goStep(3)" disabled>Enviar feedback →</button>
+    <button class="btn-secondary" onclick="goStep(1)">← Voltar</button>
+  </div>
+
+  <!-- ── STEP 3: Obrigado + CTA Google ── -->
+  <div class="step" id="step3">
+    <div class="success-icon">🎉</div>
+    <div class="success-msg">Obrigado pelo feedback!</div>
+    <div class="success-sub">Sua opinião é muito importante para a gente. Recebemos com carinho cada comentário — ele ajuda a melhorar a experiência de todas as crianças.</div>
+
+    <div class="google-cta">
+      <div class="stars">⭐⭐⭐⭐⭐</div>
+      <h3>Gostou da experiência?</h3>
+      <p>Deixe uma avaliação no Google e ajude outros pais a descobrirem a My Robot Manaus. Leva menos de 1 minuto!</p>
+      <a class="btn-google" href="https://search.google.com/local/writereview?placeid=ChIJJ1dXOUkrxpQRxH1tz2KeU2g" target="_blank" rel="noopener">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+        Avaliar no Google
+      </a>
+    </div>
+
+    <button class="btn-secondary" onclick="window.location.href='/'">Voltar ao site</button>
+  </div>
+</div>
+
+<script>
+let starVal = 0;
+let selectedOpts = [];
+
+const starLabels = ['','Ruim 😕','Regular 😐','Bom 😊','Muito bom 😄','Excelente! 🤩'];
+
+function setStar(val) {
+  starVal = val;
+  document.querySelectorAll('.star-btn').forEach((b,i) => {
+    b.classList.toggle('active', i < val);
+  });
+  document.getElementById('starLabel').textContent = starLabels[val];
+  document.getElementById('btn1').disabled = false;
+}
+
+function toggleOpt(el) {
+  el.classList.toggle('selected');
+  selectedOpts = [...document.querySelectorAll('.opt.selected')].map(o => o.textContent.trim());
+}
+
+function updateChar() {
+  const t = document.getElementById('comentario').value;
+  document.getElementById('charCount').textContent = Math.min(t.length, 300);
+  if (t.length > 300) document.getElementById('comentario').value = t.slice(0,300);
+}
+
+function checkStep2() {
+  const nome = document.getElementById('nomeResp').value.trim();
+  document.getElementById('btn2').disabled = nome.length < 2;
+}
+
+function goStep(n) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('visible'));
+  document.getElementById('step'+n).classList.add('visible');
+
+  // Update dots
+  ['dot1','dot2','dot3'].forEach((id,i) => {
+    const dot = document.getElementById(id);
+    dot.classList.remove('active','done');
+    if (i+1 < n) dot.classList.add('done');
+    else if (i+1 === n) dot.classList.add('active');
+  });
+
+  // Update progress bar
+  const pct = {1:33,2:66,3:100};
+  document.getElementById('progressBar').style.width = pct[n]+'%';
+
+  // On step 3: send data
+  if (n === 3) sendFeedback();
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function sendFeedback() {
+  const data = {
+    timestamp: new Date().toISOString(),
+    nota: starVal,
+    destaques: selectedOpts,
+    comentario: document.getElementById('comentario').value.trim(),
+    nome: document.getElementById('nomeResp').value.trim(),
+    filho: document.getElementById('nomeFilho').value.trim(),
+  };
+  // Save locally
+  try { localStorage.setItem('myrobot_feedback_'+Date.now(), JSON.stringify(data)); } catch(e){}
+
+  // If nota >= 4, automatically open Google review after 3s
+  if (data.nota >= 4) {
+    setTimeout(() => {
+      const link = document.querySelector('.btn-google');
+      if (link) link.style.animation = 'pulse 1s ease-in-out 3';
+    }, 2000);
+  }
+}
+</script>
+
+<style>
+@keyframes pulse {
+  0%,100%{transform:scale(1);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+  50%{transform:scale(1.02);box-shadow:0 4px 16px rgba(255,85,0,.2)}
+}
+</style>
+</body>
+</html>
