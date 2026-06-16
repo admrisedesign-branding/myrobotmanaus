@@ -2604,32 +2604,21 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
         <div style="position:relative">
           <div id="media-loop" style="aspect-ratio:1/1;border-radius:20px;overflow:hidden;background:#0A0A0A;position:relative;box-shadow:0 24px 64px rgba(0,0,0,.3)">
 
-            <!-- Slides — substituir src pelas URLs reais do GitHub -->
-            <!-- Pasta: myrobot-vercel/img/ -->
-            <div class="ml-slide ml-active" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:0.85rem;background:#111">
-              <span style="font-size:3rem">📸</span>
-              <span style="font-family:'Instrument Sans',sans-serif">Foto da estrutura 1</span>
-              <span style="font-size:0.75rem;color:#333">substituir por: /img/estrutura-1.jpg</span>
+            <!-- Slides reais -->
+            <div class="ml-slide ml-active" style="position:absolute;inset:0">
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/estrutura-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
             </div>
-            <div class="ml-slide" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:0.85rem;background:#0D0D0D">
-              <span style="font-size:3rem">📸</span>
-              <span style="font-family:'Instrument Sans',sans-serif">Alunos em aula</span>
-              <span style="font-size:0.75rem;color:#333">substituir por: /img/aula-1.jpg</span>
+            <div class="ml-slide" style="position:absolute;inset:0;display:none">
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/aula-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
             </div>
-            <div class="ml-slide" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:0.85rem;background:#111">
-              <span style="font-size:3rem">📸</span>
-              <span style="font-family:'Instrument Sans',sans-serif">Projeto de robótica</span>
-              <span style="font-size:0.75rem;color:#333">substituir por: /img/projeto-1.jpg</span>
+            <div class="ml-slide" style="position:absolute;inset:0;display:none">
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/projeto-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
             </div>
-            <div class="ml-slide" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:0.85rem;background:#0D0D0D">
-              <span style="font-size:3rem">📸</span>
-              <span style="font-family:'Instrument Sans',sans-serif">Laboratório</span>
-              <span style="font-size:0.75rem;color:#333">substituir por: /img/lab-1.jpg</span>
+            <div class="ml-slide" style="position:absolute;inset:0;display:none">
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/lab-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
             </div>
-            <div class="ml-slide" style="position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:#444;font-size:0.85rem;background:#111">
-              <span style="font-size:3rem">📸</span>
-              <span style="font-family:'Instrument Sans',sans-serif">Apresentação de projetos</span>
-              <span style="font-size:0.75rem;color:#333">substituir por: /img/apresentacao-1.jpg</span>
+            <div class="ml-slide" style="position:absolute;inset:0;display:none">
+              <img src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/apresentacao-1.jpeg" style="width:100%;height:100%;object-fit:cover">
             </div>
 
             <!-- Indicadores -->
@@ -3275,14 +3264,20 @@ function smToggle(id) {
   if(!slides.length) return;
   var cur = 0;
   function mlGo(n){
+    // pause current video if any
+    var curVid = slides[cur].querySelector('video');
+    if(curVid) curVid.pause();
     slides[cur].style.display = 'none';
     dots[cur].classList.remove('ml-dot-active');
     cur = (n + slides.length) % slides.length;
-    slides[cur].style.display = 'flex';
+    slides[cur].style.display = 'block';
     dots[cur].classList.add('ml-dot-active');
+    // play next video if any
+    var nextVid = slides[cur].querySelector('video');
+    if(nextVid){ nextVid.currentTime=0; nextVid.play(); }
   }
   dots.forEach(function(d,i){ d.onclick = function(){ mlGo(i); }; });
-  setInterval(function(){ mlGo(cur+1); }, 3500);
+  setInterval(function(){ mlGo(cur+1); }, 4000);
 })();
 </script>
 </body>
