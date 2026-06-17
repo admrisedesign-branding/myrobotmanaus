@@ -3224,14 +3224,14 @@ function submitForm() {
   const prog=document.querySelector('.progress-bar-wrap'); if(prog) prog.style.display='none';
   const step=document.querySelector('.stepper'); if(step) step.style.display='none';
   const suc=document.getElementById('success-screen'); if(suc) suc.style.display='block';
+  // Meta Pixel — evento Lead (disparado ao mostrar tela de sucesso)
+  try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('Pixel Lead fired'); } }catch(e){}
   const st=document.getElementById('successTitle'); if(st) st.textContent='Perfeito, '+rn.split(' ')[0]+'!';
   const ss=document.getElementById('successSub'); if(ss) ss.textContent=mom==='matricular'?'Sua vaga está sendo reservada! Confirme agora pelo WhatsApp.':'Aula experimental agendada! Confirme pelo WhatsApp.';
   const sb=document.getElementById('scoreBadge'); if(sb){sb.style.display='none';}
   const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
   const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg);
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
-  // Meta Pixel — evento Lead
-  if(typeof fbq!=='undefined') fbq('track','Lead');
   if(score>=55) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
 }
 // WhatsApp input mask
