@@ -1,33 +1,31 @@
 // api/create-pipeline.js
-// ⚠️ ARQUIVO TEMPORÁRIO — usar uma vez e APAGAR depois.
+// ⚠️ ARQUIVO TEMPORÁRIO — usar e APAGAR depois.
+// Cria/repara o funil "My Robot — Comercial 2026" usando o KOMMO_TOKEN da Vercel
+// (o token nunca sai do servidor).
 //
-// Cria o funil "My Robot — Comercial 2026" usando o KOMMO_TOKEN que já está
-// nas variáveis de ambiente da Vercel. O token NUNCA sai do servidor.
-//
-// COMO USAR:
-//   1) Coloca este arquivo em  myrobot-vercel/api/create-pipeline.js  no GitHub.
-//   2) Espera a Vercel fazer o deploy.
-//   3) Abre no navegador:
-//        https://myrobotmanaus.com/api/create-pipeline?key=myrobot2026
-//   4) Copia o JSON que aparecer e manda pro Claude.
-//   5) APAGA este arquivo do repo (faz outro commit removendo).
-//
-// É seguro abrir mais de uma vez: se o funil já existir, ele NÃO duplica —
-// só devolve os IDs do que já está lá.
+// Abrir:  https://myrobotmanaus.com/api/create-pipeline?key=myrobot2026
+// Pode abrir mais de uma vez: não duplica o funil e corrige os nomes das etapas.
 
 const SUBDOMAIN = process.env.KOMMO_SUBDOMAIN || "roboticanorte";
 const NOME_FUNIL = "My Robot — Comercial 2026";
 
+// O Kommo não guarda emoji de 4 bytes em nome de etapa (salva vazio),
+// então usamos texto limpo. Mapa por 'sort' (ordem fixa das etapas).
+const NOMES = {
+  20: "Novo Lead",
+  30: "Em Contato",
+  40: "Qualificado",
+  50: "Aula Agendada",
+  60: "Matrícula em Andamento",
+  70: "Aluno Ativo",
+  80: "Remarketing",
+};
+
 export default async function handler(req, res) {
-  // guarda simples pra ninguém disparar isso por acaso (troque se quiser)
-  if (req.query.key !== "myrobot2026") {
-    return res.status(403).json({ error: "key inválida" });
-  }
+  if (req.query.key !== "myrobot2026") return res.status(403).json({ error: "key inválida" });
 
   const token = process.env.KOMMO_TOKEN;
-  if (!token) {
-    return res.status(500).json({ error: "KOMMO_TOKEN não está nas env vars da Vercel" });
-  }
+  if (!token) return res.status(500).json({ error: "KOMMO_TOKEN não está nas env vars da Vercel" });
 
   const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
   const base = `https://${SUBDOMAIN}.kommo.com/api/v4/leads/pipelines`;
@@ -39,40 +37,53 @@ export default async function handler(req, res) {
   });
 
   try {
-    // 1) Já existe um funil com esse nome? Se sim, não duplica — devolve ele.
+    // 1) Acha o funil pelo nome
     const listR = await fetch(base, { headers: auth });
     const listData = await listR.json().catch(() => ({}));
-    const existente = listData?._embedded?.pipelines?.find((p) => p.name === NOME_FUNIL);
-    if (existente) {
-      return res.status(200).json({ ok: true, jaExistia: true, resumo: resumo(existente) });
+    let pipe = listData?._embedded?.pipelines?.find((p) => p.name === NOME_FUNIL);
+
+    // 2) Se não existir, cria (com nomes em texto limpo)
+    if (!pipe) {
+      const payload = [{
+        name: NOME_FUNIL,
+        is_main: false,
+        is_unsorted_on: true,
+        sort: 3,
+        _embedded: {
+          statuses: [
+            { name: "Novo Lead", sort: 20 },
+            { name: "Em Contato", sort: 30 },
+            { name: "Qualificado", sort: 40 },
+            { name: "Aula Agendada", sort: 50 },
+            { name: "Matrícula em Andamento", sort: 60 },
+            { name: "Aluno Ativo", sort: 70 },
+            { name: "Remarketing", sort: 80 },
+          ],
+        },
+      }];
+      const r = await fetch(base, { method: "POST", headers: auth, body: JSON.stringify(payload) });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) return res.status(502).json({ error: "Kommo recusou", status: r.status, data });
+      pipe = data._embedded.pipelines[0];
     }
 
-    // 2) Cria o funil com as 7 etapas (won/lost 142/143 entram sozinhas).
-    const payload = [{
-      name: NOME_FUNIL,
-      is_main: false,
-      is_unsorted_on: true,
-      sort: 3,
-      _embedded: {
-        statuses: [
-          { name: "🆕 Novo Lead", sort: 10 },
-          { name: "💬 Em Contato", sort: 20 },
-          { name: "✅ Qualificado", sort: 30 },
-          { name: "📅 Aula Agendada", sort: 40 },
-          { name: "🎓 Matrícula em Andamento", sort: 50 },
-          { name: "👤 Aluno Ativo", sort: 60 },
-          { name: "🔄 Remarketing", sort: 70 },
-        ],
-      },
-    }];
-
-    const r = await fetch(base, { method: "POST", headers: auth, body: JSON.stringify(payload) });
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) {
-      return res.status(502).json({ error: "Kommo recusou", status: r.status, data });
+    // 3) Repara nomes vazios/errados das 7 etapas (mapeando por sort)
+    let corrigidos = 0;
+    for (const s of pipe._embedded.statuses) {
+      const alvo = NOMES[s.sort];
+      if (alvo && s.name !== alvo) {
+        const pr = await fetch(`${base}/${pipe.id}/statuses/${s.id}`, {
+          method: "PATCH", headers: auth, body: JSON.stringify({ name: alvo }),
+        });
+        if (pr.ok) corrigidos++;
+      }
     }
 
-    return res.status(200).json({ ok: true, criado: true, resumo: resumo(data._embedded.pipelines[0]) });
+    // 4) Relê o funil pra devolver o estado final
+    const finalR = await fetch(`${base}/${pipe.id}`, { headers: auth });
+    const finalData = await finalR.json().catch(() => pipe);
+
+    return res.status(200).json({ ok: true, corrigidos, resumo: resumo(finalData) });
   } catch (err) {
     return res.status(500).json({ error: String(err) });
   }
