@@ -2064,6 +2064,15 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
   <noscript><img height="1" width="1" style="display:none"
   src="https://www.facebook.com/tr?id=1365485995485803&ev=PageView&noscript=1"/></noscript>
   <!-- Fim Meta Pixel -->
+  <!-- Google Analytics — My Robot Manaus -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-JLVV4P516H"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-JLVV4P516H');
+  </script>
+  <!-- Fim Google Analytics -->
 </head>
 <body>
 
@@ -3206,6 +3215,8 @@ function submitForm() {
   const msg=`Olá, My Robot Manaus! Me chamo ${rn} e ${momTexto}.\n\nMeu filho se chama ${fn} e tem ${fi} anos.\n\nPode me dar mais informações?`;
   // Meta Pixel — dispara antes da API para garantir registro
   try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('✓ Pixel Lead fired'); } }catch(e){ console.warn('Pixel error:',e); }
+  // Google Analytics — evento Lead
+  try{ if(typeof gtag!=='undefined'){ gtag('event','generate_lead',{event_category:'formulario',event_label:'site'}); } }catch(e){}
 
   // Cria o lead na Kommo (não trava a abertura do WhatsApp)
   fetch('/api/kommo-lead', {
