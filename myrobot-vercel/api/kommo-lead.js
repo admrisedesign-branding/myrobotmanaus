@@ -6,7 +6,7 @@
 // ─── CONFIG (já preenchido com os dados reais da conta) ─────────────────────
 const SUBDOMAIN  = "roboticanorte";
 const PIPELINE_ID = 12267080;   // Funil de vendas School
-const STATUS_ID   = 94806760;   // Etapa de entrada (Leads de Entrada)
+const STATUS_ID   = 94806756;   // Etapa de entrada (Leads de Entrada)
 
 const FIELD = {
   score:     3880739,  // Numérico
