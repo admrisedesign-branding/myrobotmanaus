@@ -2051,6 +2051,19 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
   background: #FF4D00; width: 18px; border-radius: 3px;
 }
 </style>
+  <!-- Meta Pixel — My Robot Manaus -->
+  <script>
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+  document,'script','https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1365485995485803');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1365485995485803&ev=PageView&noscript=1"/></noscript>
+  <!-- Fim Meta Pixel -->
 </head>
 <body>
 
@@ -3217,6 +3230,8 @@ function submitForm() {
   const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
   const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg);
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
+  // Meta Pixel — evento Lead
+  if(typeof fbq!=='undefined') fbq('track','Lead');
   if(score>=55) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
 }
 // WhatsApp input mask
