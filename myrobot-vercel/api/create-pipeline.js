@@ -51,6 +51,8 @@ export default async function handler(req, res) {
     const payload = [{
       name: NOME_FUNIL,
       is_main: false,
+      is_unsorted_on: true,
+      sort: 3,
       _embedded: {
         statuses: [
           { name: "🆕 Novo Lead", sort: 10 },
