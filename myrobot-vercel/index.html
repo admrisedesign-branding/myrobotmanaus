@@ -3204,6 +3204,9 @@ function submitForm() {
   const lead=score>=55?{e:'🔥',l:'Lead Quente',cls:'sbhot'}:score>=25?{e:'🌡️',l:'Lead Morno',cls:'sbwarm'}:{e:'❄️',l:'Lead Frio',cls:'sbcold'};
   const momTexto={matricular:'gostaria de matricular meu filho',aula_exp:'gostaria de agendar uma aula experimental exclusiva',pesquisando:'estou conhecendo as opções de cursos',conhecer:'gostaria de saber mais sobre os cursos'}[mom]||'tenho interesse nos cursos';
   const msg=`Olá, My Robot Manaus! Me chamo ${rn} e ${momTexto}.\n\nMeu filho se chama ${fn} e tem ${fi} anos.\n\nPode me dar mais informações?`;
+  // Meta Pixel — dispara antes da API para garantir registro
+  try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('✓ Pixel Lead fired'); } }catch(e){ console.warn('Pixel error:',e); }
+
   // Cria o lead na Kommo (não trava a abertura do WhatsApp)
   fetch('/api/kommo-lead', {
     method: 'POST',
@@ -3224,8 +3227,7 @@ function submitForm() {
   const prog=document.querySelector('.progress-bar-wrap'); if(prog) prog.style.display='none';
   const step=document.querySelector('.stepper'); if(step) step.style.display='none';
   const suc=document.getElementById('success-screen'); if(suc) suc.style.display='block';
-  // Meta Pixel — evento Lead (disparado ao mostrar tela de sucesso)
-  try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('Pixel Lead fired'); } }catch(e){}
+
   const st=document.getElementById('successTitle'); if(st) st.textContent='Perfeito, '+rn.split(' ')[0]+'!';
   const ss=document.getElementById('successSub'); if(ss) ss.textContent=mom==='matricular'?'Sua vaga está sendo reservada! Confirme agora pelo WhatsApp.':'Aula experimental agendada! Confirme pelo WhatsApp.';
   const sb=document.getElementById('scoreBadge'); if(sb){sb.style.display='none';}
