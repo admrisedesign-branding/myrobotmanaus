@@ -1,25 +1,24 @@
 // api/create-pipeline.js
 // ⚠️ ARQUIVO TEMPORÁRIO — usar e APAGAR depois.
-// Cria/repara o funil "My Robot — Comercial 2026" usando o KOMMO_TOKEN da Vercel
-// (o token nunca sai do servidor).
-//
-// Abrir:  https://myrobotmanaus.com/api/create-pipeline?key=myrobot2026
-// Pode abrir mais de uma vez: não duplica o funil e corrige os nomes das etapas.
+// Cria/repara o funil "My Robot — Comercial 2026" usando o KOMMO_TOKEN da Vercel.
+// Abrir: https://myrobotmanaus.com/api/create-pipeline?key=myrobot2026
+// Seguro abrir mais de uma vez: não duplica, corrige nomes E ordem das etapas.
 
 const SUBDOMAIN = process.env.KOMMO_SUBDOMAIN || "roboticanorte";
 const NOME_FUNIL = "My Robot — Comercial 2026";
 
-// O Kommo não guarda emoji de 4 bytes em nome de etapa (salva vazio),
-// então usamos texto limpo. Mapa por 'sort' (ordem fixa das etapas).
-const NOMES = {
-  20: "Novo Lead",
-  30: "Em Contato",
-  40: "Qualificado",
-  50: "Aula Agendada",
-  60: "Matrícula em Andamento",
-  70: "Aluno Ativo",
-  80: "Remarketing",
+// Nome alvo -> sort alvo (define a ORDEM correta do funil)
+const ORDEM = {
+  "Novo Lead": 20,
+  "Em Contato": 30,
+  "Qualificado": 40,
+  "Aula Agendada": 50,
+  "Matrícula em Andamento": 60,
+  "Aluno Ativo": 70,
+  "Remarketing": 80,
 };
+// Fallback por sort original (caso de criação nova, com nome ainda vazio)
+const POR_SORT = { 20: "Novo Lead", 30: "Em Contato", 40: "Qualificado", 50: "Aula Agendada", 60: "Matrícula em Andamento", 70: "Aluno Ativo", 80: "Remarketing" };
 
 export default async function handler(req, res) {
   if (req.query.key !== "myrobot2026") return res.status(403).json({ error: "key inválida" });
@@ -42,24 +41,19 @@ export default async function handler(req, res) {
     const listData = await listR.json().catch(() => ({}));
     let pipe = listData?._embedded?.pipelines?.find((p) => p.name === NOME_FUNIL);
 
-    // 2) Se não existir, cria (com nomes em texto limpo)
+    // 2) Se não existir, cria
     if (!pipe) {
       const payload = [{
-        name: NOME_FUNIL,
-        is_main: false,
-        is_unsorted_on: true,
-        sort: 3,
-        _embedded: {
-          statuses: [
-            { name: "Novo Lead", sort: 20 },
-            { name: "Em Contato", sort: 30 },
-            { name: "Qualificado", sort: 40 },
-            { name: "Aula Agendada", sort: 50 },
-            { name: "Matrícula em Andamento", sort: 60 },
-            { name: "Aluno Ativo", sort: 70 },
-            { name: "Remarketing", sort: 80 },
-          ],
-        },
+        name: NOME_FUNIL, is_main: false, is_unsorted_on: true, sort: 3,
+        _embedded: { statuses: [
+          { name: "Novo Lead", sort: 20 },
+          { name: "Em Contato", sort: 30 },
+          { name: "Qualificado", sort: 40 },
+          { name: "Aula Agendada", sort: 50 },
+          { name: "Matrícula em Andamento", sort: 60 },
+          { name: "Aluno Ativo", sort: 70 },
+          { name: "Remarketing", sort: 80 },
+        ] },
       }];
       const r = await fetch(base, { method: "POST", headers: auth, body: JSON.stringify(payload) });
       const data = await r.json().catch(() => ({}));
@@ -67,13 +61,16 @@ export default async function handler(req, res) {
       pipe = data._embedded.pipelines[0];
     }
 
-    // 3) Repara nomes vazios/errados das 7 etapas (mapeando por sort)
+    // 3) Corrige NOME e SORT das 7 etapas (sempre mandando o sort explícito)
     let corrigidos = 0;
     for (const s of pipe._embedded.statuses) {
-      const alvo = NOMES[s.sort];
-      if (alvo && s.name !== alvo) {
+      if (s.id === 142 || s.id === 143) continue;            // won/lost: não mexe
+      const nomeAlvo = ORDEM[s.name] ? s.name : POR_SORT[s.sort];
+      if (!nomeAlvo) continue;                                // ex: "Incoming leads"
+      const sortAlvo = ORDEM[nomeAlvo];
+      if (s.name !== nomeAlvo || s.sort !== sortAlvo) {
         const pr = await fetch(`${base}/${pipe.id}/statuses/${s.id}`, {
-          method: "PATCH", headers: auth, body: JSON.stringify({ name: alvo }),
+          method: "PATCH", headers: auth, body: JSON.stringify({ name: nomeAlvo, sort: sortAlvo }),
         });
         if (pr.ok) corrigidos++;
       }
@@ -82,7 +79,6 @@ export default async function handler(req, res) {
     // 4) Relê o funil pra devolver o estado final
     const finalR = await fetch(`${base}/${pipe.id}`, { headers: auth });
     const finalData = await finalR.json().catch(() => pipe);
-
     return res.status(200).json({ ok: true, corrigidos, resumo: resumo(finalData) });
   } catch (err) {
     return res.status(500).json({ error: String(err) });
