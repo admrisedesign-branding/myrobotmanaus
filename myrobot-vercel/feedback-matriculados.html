@@ -5,22 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Robot Manaus — Sua opinião</title>
 <!--
-  ============================================================================
-  CONFIGURAÇÃO — preencha estes 3 valores do Supabase antes de publicar.
-  (O link do Google já está pronto.)
-
-  SQL para criar a tabela no Supabase (rode no SQL Editor):
-
-    create table feedback_matriculados (
-      id uuid default gen_random_uuid() primary key,
-      created_at timestamptz default now(),
-      responsavel text, aluno text, email text, bairro text,
-      nps int, comentario text, permite_uso boolean
-    );
-    alter table feedback_matriculados enable row level security;
-    create policy "insert_anon" on feedback_matriculados
-      for insert to anon with check (true);
-  ============================================================================
+  Formulário de feedback dos matriculados — My Robot Manaus.
+  Salva DIRETO no CRM Kommo via /api/kommo-feedback (sem Supabase).
+  O telefone e o id do lead vêm escondidos no link: ?wn=55XXXXXXXXXXX&id=NNN
 -->
 <style>
   :root{
@@ -145,11 +132,14 @@
 
 <script>
   // ===== CONFIG =====
-  const SUPABASE_URL = "https://SEU-PROJETO.supabase.co";   // <-- preencher
-  const SUPABASE_ANON_KEY = "SUA_ANON_KEY";                 // <-- preencher
-  const TABELA = "feedback_matriculados";
   const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJJ1dXOUkbbJIRxH1t32yeU2g";
+  const ENDPOINT = "/api/kommo-feedback"; // salva direto no CRM Kommo
   // ==================
+
+  // captura dados escondidos do link: ?wn=559299999999 (telefone) e ?id=NNN (id do lead no CRM, opcional)
+  const _params = new URLSearchParams(window.location.search);
+  const WN_LINK = (_params.get("wn") || "").replace(/\D/g, "");
+  const LEAD_ID = _params.get("id") || "";
 
   // monta os botões 0-10
   let npsVal = null;
@@ -183,23 +173,18 @@
       bairro: $('bairro').value.trim(),
       nps: npsVal,
       comentario,
-      permite_uso: $('permite').checked
+      permite_uso: $('permite').checked,
+      telefone: WN_LINK ? "+" + WN_LINK : "",
+      lead_id: LEAD_ID
     };
 
     try{
-      // tenta salvar no Supabase (se configurado)
-      if(SUPABASE_URL.includes("SEU-PROJETO")===false){
-        await fetch(`${SUPABASE_URL}/rest/v1/${TABELA}`, {
-          method:"POST",
-          headers:{
-            "Content-Type":"application/json",
-            "apikey":SUPABASE_ANON_KEY,
-            "Authorization":`Bearer ${SUPABASE_ANON_KEY}`,
-            "Prefer":"return=minimal"
-          },
-          body: JSON.stringify(payload)
-        });
-      }
+      // salva direto no CRM Kommo
+      await fetch(ENDPOINT, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify(payload)
+      });
     }catch(e){ /* mesmo se falhar o salvamento, segue pro Google */ }
 
     // mostra agradecimento com o comentário pronto pra copiar
