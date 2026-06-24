@@ -17,6 +17,44 @@ const FIELD_BAIRRO = 3880749; // campo "Bairro" do lead (mesmo do kommo-lead.js)
 const digits = (s) => String(s || "").replace(/\D/g, "");
 const classificarNPS = (n) => (n == null ? null : n >= 9 ? "Promotor" : n >= 7 ? "Neutro" : "Detrator");
 
+// Gera variações do telefone p/ buscar no Kommo (BR salva ora COM, ora SEM o 9).
+// Ex.: 5592991251655 (com 9) e 559291251655 (sem 9), além do número "cru".
+function variacoesTelefone(tel) {
+  const d = digits(tel);
+  const set = new Set();
+  if (!d) return [];
+  set.add(d);
+  // normaliza p/ ter 55 na frente
+  const com55 = d.startsWith("55") ? d : "55" + d;
+  set.add(com55);
+  const resto = com55.slice(2); // DDD + número, sem o 55
+  if (resto.length === 11 && resto[2] === "9") {
+    // tem o 9 -> cria versão SEM o 9
+    const sem9 = resto.slice(0, 2) + resto.slice(3);
+    set.add("55" + sem9);
+    set.add(sem9);
+  } else if (resto.length === 10) {
+    // não tem o 9 -> cria versão COM o 9
+    const com9 = resto.slice(0, 2) + "9" + resto.slice(2);
+    set.add("55" + com9);
+    set.add(com9);
+  }
+  // também a versão sem 55 do número cru
+  set.add(resto);
+  return [...set].filter(Boolean);
+}
+
+async function acharContatoPorTelefone(api, auth, tel) {
+  for (const q of variacoesTelefone(tel)) {
+    const r = await fetch(`${api}/contacts?query=${encodeURIComponent(q)}`, { headers: auth });
+    if (!r.ok) continue;
+    const data = await r.json().catch(() => ({}));
+    const c = (data?._embedded?.contacts || [])[0];
+    if (c) return c;
+  }
+  return null;
+}
+
 // cache dos campos personalizados (resolvidos pelo nome)
 let CAMPOS = null;
 async function resolverCampos(api, auth) {
@@ -83,12 +121,8 @@ export default async function handler(req, res) {
       }
     }
     if (!contactId && telefone) {
-      const r = await fetch(`${api}/contacts?query=${encodeURIComponent(telefone)}`, { headers: auth });
-      if (r.ok) {
-        const data = await r.json().catch(() => ({}));
-        const c = (data?._embedded?.contacts || [])[0];
-        if (c) { contactId = c.id; if (!noteAlvo) noteAlvo = { tipo: "contacts", id: c.id }; }
-      }
+      const c = await acharContatoPorTelefone(api, auth, telefone);
+      if (c) { contactId = c.id; if (!noteAlvo) noteAlvo = { tipo: "contacts", id: c.id }; }
     }
 
     const feito = { contato_encontrado: !!contactId, campos: false, bairro: false, nota: false };
