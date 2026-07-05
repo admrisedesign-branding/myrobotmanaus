@@ -1,38 +1,40 @@
 // api/kommo-dedupe.js
-// Chamado pelo Salesbot QUALIFICA no INÍCIO do fluxo (quando um lead entra pelo WhatsApp).
+// Chamado pelo Salesbot QUALIFICA no INÍCIO do fluxo (lead que entra pelo WhatsApp).
 //
 // O que faz: pega o telefone desse lead e procura se a MESMA pessoa já tem um lead do SITE
-// (tag "site"). Se tiver:
-//   • adiciona a tag "whatsapp-bot" ao lead do SITE (mantém a ordem: site -> whatsapp-bot)
-//   • adiciona a tag "ja-cadastrado" a ESTE lead do bot  → é o SINAL que o bot vai ler
+// (tag "site"). Se tiver (é duplicado):
+//   • SURVIVOR = "whatsapp": o lead do WhatsApp SOBREVIVE (ele carrega o chat no card).
+//       - copia pro lead do WhatsApp os campos de qualificação do lead do site
+//       - adiciona a tag "site" ao lead do WhatsApp
+//       - marca o campo "Dedupe" = sim  → SINAL que o bot lê pra pular as perguntas
+//       - FECHA o lead do site como duplicado (Perdido / 143)
+//     Assim o comercial abre 1 card só, em Novo Lead, COM a conversa do WhatsApp dentro.
 // Se não achar nada, não faz nada (o bot segue a qualificação normal).
-//
-// O bot, depois de chamar este webhook, espera alguns segundos e verifica:
-//   tem a tag "ja-cadastrado"?  SIM → manda a mensagem de handoff e move pra Perdido (143)
-//                               NÃO → faz as 4 perguntas de sempre.
 //
 // Config: variável de ambiente KOMMO_TOKEN na Vercel (a mesma que já existe).
 // ─────────────────────────────────────────────────────────────────────────────
 const SUBDOMAIN = "roboticanorte";
 const API = `https://${SUBDOMAIN}.kommo.com/api/v4`;
 
-// Se um dia você quiser INVERTER (manter o lead do WhatsApp e fechar o do site),
-// troque para "whatsapp". Por padrão o lead do SITE é o que sobrevive.
-const SURVIVOR = "site";
+// Quem sobrevive quando é duplicado. "whatsapp" = mantém o lead do WhatsApp (com o chat),
+// fecha o do site. "site" = o contrário. Aqui usamos "whatsapp".
+const SURVIVOR = "whatsapp";
 
-// tag que marca a origem do site (a mesma que o kommo-lead.js usa)
 const SITE_TAG = "site";
 const BOT_TAG = "whatsapp-bot";
-const DUP_TAG = "ja-cadastrado"; // (mantido também como tag, pra filtro visual)
+const DUP_TAG = "ja-cadastrado"; // tag pra filtro visual
 
 // Sinal que o Salesbot lê por CONDIÇÃO (a conta não deixa condicionar por tag,
-// nem digitar valor na condição — só checar "preenchido / não preenchido").
-// Gravamos no campo dedicado "Dedupe" (id 3883241) DESTE lead do bot.
-// A condição no bot fica: "Lead: Dedupe" → Preenchido.
+// nem digitar valor — só checar "preenchido / não preenchido").
+// Gravamos no campo dedicado "Dedupe" (id 3883241) do lead que SOBREVIVE.
 const FIELD_DEDUPE = 3883241;
 const DUP_SIGNAL = "sim";
 
-const CLOSED_STATUSES = [142, 143]; // ganho / perdido → considerados "fechados"
+// Campos de qualificação a copiar do lead do site -> lead do WhatsApp.
+// (Score, Categoria, Área, Trilha, Momento, Bairro, Origem, Filho)
+const COPY_FIELDS = [3880739, 3880741, 3880743, 3880745, 3880747, 3880749, 3880751, 3880753];
+
+const CLOSED_STATUSES = [142, 143]; // ganho / perdido
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 function digits(s) { return String(s || "").replace(/\D/g, ""); }
@@ -50,7 +52,6 @@ async function kommo(token, path, opts = {}) {
   return { ok: r.ok, status: r.status, data };
 }
 
-// Extrai o ID do lead atual — aceita ?lead_id=... na URL OU o corpo que a Kommo manda.
 function extractLeadId(req) {
   const q = req.query?.lead_id;
   if (q && !String(q).includes("{{")) {
@@ -88,7 +89,7 @@ async function getContactPhone(token, contactId) {
 }
 
 // procura, entre todos os contatos com esse telefone, um lead ABERTO com a tag "site"
-// que NÃO seja o próprio lead atual.
+// que NÃO seja o próprio lead atual. Retorna o lead completo (com campos e tags).
 async function findSiteLead(token, phoneDig, currentLeadId) {
   if (!phoneDig) return null;
   const { ok, data } = await kommo(
@@ -118,6 +119,24 @@ async function findSiteLead(token, phoneDig, currentLeadId) {
   return candidates[0] || null;
 }
 
+// monta os custom_fields_values a copiar do lead do site (só os que existem e têm valor)
+function fieldsToCopy(siteLead) {
+  const src = siteLead.custom_fields_values || [];
+  const out = [];
+  for (const f of src) {
+    if (!COPY_FIELDS.includes(f.field_id)) continue;
+    const values = (f.values || [])
+      .map((v) => {
+        if (v.enum_id != null) return { enum_id: v.enum_id };
+        if (v.value != null && String(v.value).trim() !== "") return { value: v.value };
+        return null;
+      })
+      .filter(Boolean);
+    if (values.length) out.push({ field_id: f.field_id, values });
+  }
+  return out;
+}
+
 // ─── handler ─────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   const token = process.env.KOMMO_TOKEN;
@@ -139,46 +158,33 @@ export default async function handler(req, res) {
     const siteLead = await findSiteLead(token, phoneDig, currentId);
     if (!siteLead) return res.status(200).json({ ok: true, duplicate: false });
 
-    // 3) é duplicado → decide quem sobrevive
-    if (SURVIVOR === "site") {
-      // sobrevive o lead do SITE: recebe a tag whatsapp-bot
-      await kommo(token, `/leads/${siteLead.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          _embedded: { tags: mergeTags(siteLead._embedded?.tags, [BOT_TAG]) },
-        }),
-      });
-      // este lead (do bot) é marcado como duplicado → sinal pro Salesbot.
-      // grava no campo Origem (que o bot consegue ler por condição) + tag pra filtro.
-      const meTags = lead?._embedded?.tags || [];
-      await kommo(token, `/leads/${currentId}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          custom_fields_values: [
-            { field_id: FIELD_DEDUPE, values: [{ value: DUP_SIGNAL }] },
-          ],
-          _embedded: { tags: mergeTags(meTags, [DUP_TAG]) },
-        }),
-      });
-      return res.status(200).json({ ok: true, duplicate: true, survivor: siteLead.id, closed: currentId });
-    } else {
-      // (opção invertida) sobrevive o lead do WhatsApp: recebe a tag "site"
-      const meTags = lead?._embedded?.tags || [];
-      await kommo(token, `/leads/${currentId}`, {
-        method: "PATCH",
-        body: JSON.stringify({ _embedded: { tags: mergeTags(meTags, [SITE_TAG]) } }),
-      });
-      // fecha o lead do site como duplicado
-      await kommo(token, `/leads/${siteLead.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          status_id: 143,
-          _embedded: { tags: mergeTags(siteLead._embedded?.tags, [DUP_TAG]) },
-        }),
-      });
-      // aqui NÃO marcamos "ja-cadastrado" no lead atual, porque ele deve seguir vivo.
-      return res.status(200).json({ ok: true, duplicate: true, survivor: currentId, closed: siteLead.id });
-    }
+    // 3) É DUPLICADO → sobrevive o lead do WhatsApp (este), fecha o do site.
+    const meTags = lead?._embedded?.tags || [];
+
+    // 3a) copia a qualificação do site + tag "site" + sinal Dedupe pro lead do WhatsApp
+    const copied = fieldsToCopy(siteLead);
+    const dedupeField = { field_id: FIELD_DEDUPE, values: [{ value: DUP_SIGNAL }] };
+    // não duplica o campo Dedupe se por acaso já veio na cópia
+    const cfPayload = [...copied.filter((f) => f.field_id !== FIELD_DEDUPE), dedupeField];
+
+    await kommo(token, `/leads/${currentId}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        custom_fields_values: cfPayload,
+        _embedded: { tags: mergeTags(meTags, [SITE_TAG, DUP_TAG]) },
+      }),
+    });
+
+    // 3b) fecha o lead do site como duplicado (Perdido / 143) + tag de marcação
+    await kommo(token, `/leads/${siteLead.id}`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        status_id: 143,
+        _embedded: { tags: mergeTags(siteLead._embedded?.tags, [DUP_TAG]) },
+      }),
+    });
+
+    return res.status(200).json({ ok: true, duplicate: true, survivor: currentId, closed: siteLead.id });
   } catch (err) {
     console.error("dedupe erro:", err);
     return res.status(200).json({ ok: false, error: String(err) });
