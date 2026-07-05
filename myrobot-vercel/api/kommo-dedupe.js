@@ -23,7 +23,14 @@ const SURVIVOR = "site";
 // tag que marca a origem do site (a mesma que o kommo-lead.js usa)
 const SITE_TAG = "site";
 const BOT_TAG = "whatsapp-bot";
-const DUP_TAG = "ja-cadastrado"; // sinal que o Salesbot vai checar
+const DUP_TAG = "ja-cadastrado"; // (mantido também como tag, pra filtro visual)
+
+// Sinal que o Salesbot lê por CONDIÇÃO (a conta não deixa condicionar por tag,
+// nem digitar valor na condição — só checar "preenchido / não preenchido").
+// Gravamos no campo dedicado "Dedupe" (id 3883241) DESTE lead do bot.
+// A condição no bot fica: "Lead: Dedupe" → Preenchido.
+const FIELD_DEDUPE = 3883241;
+const DUP_SIGNAL = "sim";
 
 const CLOSED_STATUSES = [142, 143]; // ganho / perdido → considerados "fechados"
 
@@ -141,11 +148,17 @@ export default async function handler(req, res) {
           _embedded: { tags: mergeTags(siteLead._embedded?.tags, [BOT_TAG]) },
         }),
       });
-      // este lead (do bot) é marcado como duplicado → sinal pro Salesbot
+      // este lead (do bot) é marcado como duplicado → sinal pro Salesbot.
+      // grava no campo Origem (que o bot consegue ler por condição) + tag pra filtro.
       const meTags = lead?._embedded?.tags || [];
       await kommo(token, `/leads/${currentId}`, {
         method: "PATCH",
-        body: JSON.stringify({ _embedded: { tags: mergeTags(meTags, [DUP_TAG]) } }),
+        body: JSON.stringify({
+          custom_fields_values: [
+            { field_id: FIELD_DEDUPE, values: [{ value: DUP_SIGNAL }] },
+          ],
+          _embedded: { tags: mergeTags(meTags, [DUP_TAG]) },
+        }),
       });
       return res.status(200).json({ ok: true, duplicate: true, survivor: siteLead.id, closed: currentId });
     } else {
