@@ -2117,7 +2117,10 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
 <section id="hero">
   <!-- VIDEO DE FUNDO -->
   <div class="hero-video-bg">
-    <video autoplay muted loop playsinline preload="auto" fetchpriority="high">
+    <video autoplay muted loop playsinline preload="auto" fetchpriority="high" poster="hero-poster.jpg">
+      <!-- Vídeo hospedado no próprio projeto (carrega instantâneo, servido pela Vercel).
+           O poster mostra o 1º frame na hora, então não há piscada. Pexels fica só como reserva. -->
+      <source src="hero-bg.mp4" type="video/mp4">
       <source src="https://www.pexels.com/download/video/7868195/" type="video/mp4">
       <source src="https://www.pexels.com/download/video/5198165/" type="video/mp4">
       <source src="https://www.pexels.com/download/video/7730006/" type="video/mp4">
