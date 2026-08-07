@@ -138,7 +138,9 @@ nav.scrolled .nav-links a:hover { color: #fff !important; }
   padding: 140px 0 0;
   overflow: hidden;
   position: relative;
-  background: var(--white);
+  /* Fundo escuro que já casa com o vídeo — elimina o "flash" branco
+     e mantém o texto branco legível antes do vídeo carregar. */
+  background: #0c0620;
   min-height: 100vh;
 }
 
@@ -2115,7 +2117,7 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
 <section id="hero">
   <!-- VIDEO DE FUNDO -->
   <div class="hero-video-bg">
-    <video autoplay muted loop playsinline>
+    <video autoplay muted loop playsinline preload="auto" fetchpriority="high">
       <source src="https://www.pexels.com/download/video/7868195/" type="video/mp4">
       <source src="https://www.pexels.com/download/video/5198165/" type="video/mp4">
       <source src="https://www.pexels.com/download/video/7730006/" type="video/mp4">
@@ -2630,16 +2632,16 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
 
             <!-- Slides reais -->
             <div class="ml-slide ml-active" style="position:absolute;inset:0">
-              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/estrutura-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/estrutura-1.mp4" muted loop playsinline preload="none" style="width:100%;height:100%;object-fit:cover"></video>
             </div>
             <div class="ml-slide" style="position:absolute;inset:0;display:none">
-              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/aula-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/aula-1.mp4" muted loop playsinline preload="none" style="width:100%;height:100%;object-fit:cover"></video>
             </div>
             <div class="ml-slide" style="position:absolute;inset:0;display:none">
-              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/projeto-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/projeto-1.mp4" muted loop playsinline preload="none" style="width:100%;height:100%;object-fit:cover"></video>
             </div>
             <div class="ml-slide" style="position:absolute;inset:0;display:none">
-              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/lab-1.mp4" autoplay muted loop playsinline style="width:100%;height:100%;object-fit:cover"></video>
+              <video src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/lab-1.mp4" muted loop playsinline preload="none" style="width:100%;height:100%;object-fit:cover"></video>
             </div>
             <div class="ml-slide" style="position:absolute;inset:0;display:none">
               <img src="https://raw.githubusercontent.com/admrisedesign-branding/myrobotmanaus/main/myrobot-vercel/img/apresentacao-1.jpeg" style="width:100%;height:100%;object-fit:cover">
@@ -3312,6 +3314,10 @@ function smToggle(id) {
     if(nextVid){ nextVid.currentTime=0; nextVid.play(); }
   }
   dots.forEach(function(d,i){ d.onclick = function(){ mlGo(i); }; });
+  // Dá play só no vídeo do slide ativo (os outros ficam preload="none",
+  // então não competem por banda com o vídeo de fundo no carregamento).
+  var firstVid = slides[0].querySelector('video');
+  if(firstVid){ try{ firstVid.play(); }catch(e){} }
   setInterval(function(){ mlGo(cur+1); }, 4000);
 })();
 </script>
