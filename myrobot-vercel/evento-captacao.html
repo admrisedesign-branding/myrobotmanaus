@@ -62,8 +62,8 @@
   <div id="form-view">
     <div class="evtag" id="evtag">📍 Carregando evento…</div>
     <div class="hero">
-      <h1>Bora fazer parte do futuro? 🤖</h1>
-      <p>Deixe seus dados e ganhe seu voucher de boas-vindas na hora.</p>
+      <h1>Bora captar! 🚀</h1>
+      <p>Cada cadastro é um lead a mais no funil. Preencha rapidinho e siga pro próximo.</p>
     </div>
 
     <div class="card">
@@ -107,18 +107,18 @@
   <!-- ENVIANDO -->
   <div class="sending" id="sending">
     <div class="spin"></div>
-    Salvando no sistema…
+    Salvando o lead…
   </div>
 
   <!-- AGRADECIMENTO -->
   <div class="thanks" id="thanks">
     <div class="ok">✓</div>
-    <h2 id="doneName">Cadastro feito! 🎉</h2>
-    <div class="p">O voucher já é seu. Nosso time vai entrar em contato.</div>
+    <h2 id="doneName">Lead cadastrado! 🎉</h2>
+    <div class="p">Mandou bem! Envie as boas-vindas e já parta pro próximo.</div>
     <div class="voucher">
-      <div class="lbl">Voucher de boas-vindas</div>
+      <div class="lbl">Voucher pra entregar</div>
       <div class="val">R$ 150</div>
-      <div class="sub">A gente te explica como usar 💙</div>
+      <div class="sub">Entregue ao cliente e explique o próximo passo 💙</div>
     </div>
     <a class="btn-wa" id="waBtn" href="#" target="_blank" rel="noopener">Enviar boas-vindas no WhatsApp</a>
     <button class="btn-ghost" id="prox">Cadastrar próximo</button>
@@ -157,7 +157,8 @@
 
   function sucesso(d){
     var primeiro = (d.rn||"").split(" ")[0];
-    $("doneName").textContent = primeiro ? ("Obrigado, " + primeiro + "! 🎉") : "Cadastro feito! 🎉";
+    var frases = ["Lead cadastrado! 🎉", "Boa! Mais um lead 🚀", "Mandou bem! ✨", "Isso! Lead salvo 🎯"];
+    $("doneName").textContent = frases[Math.floor(Math.random()*frases.length)];
     var alunoNome = d.fn ? d.fn.split(" ")[0] : "";
     var alunoRef = alunoNome ? ("o(a) " + alunoNome) : "seu filho(a)";
     var msg = [
