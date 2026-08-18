@@ -50,6 +50,34 @@ function ehBairroNobre(bairro) {
   return BAIRROS_NOBRES.some((n) => b.includes(n));
 }
 
+// O ID fixo do campo "Filho" pode não bater com o da conta (ou o campo pode ter
+// sido recriado). Aqui a gente descobre o ID pelo NOME uma vez e guarda em cache.
+let FILHO_ID_CACHE = null;
+async function idDoCampoFilho(token) {
+  if (FILHO_ID_CACHE !== null) return FILHO_ID_CACHE;
+  FILHO_ID_CACHE = FIELD.filho; // fallback
+  try {
+    const auth = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };
+    const alvos = ["filho", "filho(a)", "filhos", "aluno", "aluno(a)", "nome do filho", "nome do aluno"];
+    for (let p = 1; p <= 10; p++) {
+      const r = await fetch(
+        `https://${SUBDOMAIN}.kommo.com/api/v4/leads/custom_fields?limit=250&page=${p}`,
+        { headers: auth }
+      );
+      if (r.status === 204 || !r.ok) break;
+      const d = await r.json().catch(() => ({}));
+      const cfs = d?._embedded?.custom_fields || [];
+      if (!cfs.length) break;
+      const achou = cfs.find(
+        (f) => f.type === "text" && alvos.includes(String(f.name || "").trim().toLowerCase())
+      );
+      if (achou) { FILHO_ID_CACHE = achou.id; break; }
+      if (!d?._links?.next) break;
+    }
+  } catch (e) { /* mantém o fallback */ }
+  return FILHO_ID_CACHE;
+}
+
 function txt(id, value) {
   if (!id || value == null || String(value).trim() === "") return null;
   return { field_id: id, values: [{ value: String(value) }] };
@@ -134,7 +162,7 @@ export default async function handler(req, res) {
       multiselectField(FIELD.comportamento, [COMPORT_EVENTO]),
       txt(FIELD.bairro, b.bairro),
       txt(FIELD.origem, "evento"),   // origem padronizada = evento
-      txt(FIELD.filho, filho),
+      txt(await idDoCampoFilho(token), filho),
     ].filter(Boolean);
 
     // Contato

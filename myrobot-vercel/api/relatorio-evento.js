@@ -204,24 +204,37 @@ export default async function handler(req, res) {
         }
       }
 
-      // consultor: está na nota "CAPTAÇÃO EM EVENTO / Consultor: X"
+      // consultor e filho(s): estão na nota "CAPTAÇÃO EM EVENTO"
+      // (o filho vem do campo do lead; se vier vazio, cai pra nota)
       let consultor = "—";
+      let filhoNota = "";
       const nr = await fetch(`${api}/leads/${l.id}/notes?limit=50`, { headers: auth });
       if (nr.ok) {
         const nd = await nr.json().catch(() => ({}));
         for (const n of (nd?._embedded?.notes || [])) {
           const txt = n.params?.text || "";
-          const m = txt.match(/Consultor:\s*(.+)/i);
-          if (m) { consultor = m[1].split("\n")[0].trim() || "—"; break; }
+          if (consultor === "—") {
+            const m = txt.match(/Consultor:\s*(.+)/i);
+            if (m) consultor = m[1].split("\n")[0].trim() || "—";
+          }
+          if (!filhoNota) {
+            const f = txt.match(/Aluno\(s\):\s*(.+)/i) || txt.match(/Aluno:\s*(.+)/i);
+            if (f) {
+              const v = f[1].split("\n")[0].trim();
+              if (v && v !== "-") filhoNota = v;
+            }
+          }
+          if (consultor !== "—" && filhoNota) break;
         }
       }
+      const filhoFinal = (filho && filho !== "—") ? filho : (filhoNota || "—");
       porConsultor[consultor] = (porConsultor[consultor] || 0) + 1;
 
       lista.push({
         id: l.id,
         hora: horaLabel,
         responsavel,
-        filho,
+        filho: filhoFinal,
         telefone,
         bairro,
         categoria,
