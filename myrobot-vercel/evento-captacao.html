@@ -165,11 +165,11 @@
     var alunoNome = d.fn ? d.fn.split(" ")[0] : "";
     var alunoRef = alunoNome ? ("o(a) " + alunoNome) : "seu filho(a)";
     var msg = [
-      "Oi, " + (primeiro||"") + "! 🤖 Aqui é da My Robot Manaus.",
-      "Foi um prazer receber vocês no Manaus Plaza! 💙",
+      "Oi, " + (primeiro||"") + "! Aqui é da My Robot Manaus.",
+      "Foi um prazer receber vocês no Manaus Plaza!",
       "",
-      "Como prometido, " + alunoRef + " ganhou um voucher de R$ 150 🎉",
-      "Nosso time vai te chamar pra explicar certinho como usar — fica de olho! ✨"
+      "Como prometido, " + alunoRef + " ganhou um voucher de R$ 150.",
+      "Nosso time vai te chamar pra explicar certinho como usar. Fica de olho!"
     ].join("\n");
     var tel = digits(d.wn);
     if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
