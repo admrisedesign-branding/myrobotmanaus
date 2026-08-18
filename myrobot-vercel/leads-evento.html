@@ -65,25 +65,28 @@
   .bar .count{font-size:13px;color:var(--cinza);font-weight:600;white-space:nowrap;}
   .bar button{background:#fff;color:var(--lar1);border:1.5px solid var(--lar1);border-radius:24px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 
-  .tablecard{background:#fff;border:1px solid var(--borda);border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(90,110,150,.06);}
-  .scroll{overflow-x:auto;}
-  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:820px;}
-  thead th{background:#FAFBFD;text-align:left;padding:14px 16px;font-weight:700;color:var(--tinta);font-size:12px;text-transform:uppercase;letter-spacing:.4px;border-bottom:1px solid var(--borda);white-space:nowrap;}
-  tbody td{padding:13px 16px;border-bottom:1px solid #F4F6FA;vertical-align:top;}
-  tbody tr:hover{background:#FCFCFE;}
-  .pill{display:inline-block;padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700;}
+  .lista{display:flex;flex-direction:column;gap:12px;}
+  .leadcard{background:#fff;border:1px solid var(--borda);border-radius:16px;padding:16px 18px;box-shadow:0 3px 14px rgba(90,110,150,.05);}
+  .leadcard .top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;padding:0;border:none;box-shadow:none;background:none;}
+  .leadcard .who b{font-family:'Cabinet Grotesk',sans-serif;font-size:16px;font-weight:800;color:var(--tinta);display:block;}
+  .leadcard .who small{color:var(--cinza);font-size:12.5px;}
+  .leadcard .hora{font-size:12px;color:var(--cinza);white-space:nowrap;font-weight:600;}
+  .pill{display:inline-block;padding:3px 12px;border-radius:20px;font-size:11.5px;font-weight:700;}
   .pill.quente{background:#FFEBE2;color:#FF4D00;}
   .pill.morno{background:#EFEAFC;color:#6C3FFF;}
   .pill.na{background:#F0F1F4;color:#9891a8;}
+  .leadcard .grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:13.5px;margin-bottom:10px;}
+  .leadcard .grid2 .lbl{color:var(--cinza);font-size:11px;text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:1px;}
+  .leadcard .grid2 .val{color:var(--tinta);font-weight:600;}
+  .leadcard .fbbox{border-top:1px solid #F1F1F5;padding-top:10px;font-size:13px;}
   .fb-sim{color:var(--verde);font-weight:700;}
   .fb-nao{color:var(--cinza);}
   .nps{font-weight:800;color:var(--roxo);}
-  .coment{max-width:260px;color:#555;font-size:12.5px;line-height:1.4;}
-  .resp b{color:var(--tinta);}
-  .resp small{color:var(--cinza);display:block;font-size:11.5px;}
-  .empty{padding:50px;text-align:center;color:var(--cinza);}
-  .loading{padding:50px;text-align:center;color:var(--cinza);}
-  @media(max-width:600px){.head{padding-left:68px;}}
+  .coment{color:#555;font-size:13px;line-height:1.45;margin-top:4px;font-style:italic;}
+  .aut{color:var(--verde);font-size:11.5px;font-weight:600;font-style:normal;}
+  .empty,.loading{padding:50px;text-align:center;color:var(--cinza);}
+  @media(max-width:600px){.head{padding-left:68px;}.leadcard .grid2{grid-template-columns:1fr;}}
+
 </style>
 </head>
 <body>
@@ -115,18 +118,8 @@
         <span class="count" id="count">—</span>
         <button id="btnRefresh">↻ Atualizar</button>
       </div>
-      <div class="tablecard">
-        <div class="scroll">
-          <table>
-            <thead><tr>
-              <th>Hora</th><th>Responsável</th><th>Filho / idade</th><th>Telefone</th>
-              <th>Bairro</th><th>Categoria</th><th>Consultor</th><th>Feedback</th><th>NPS</th><th>Comentário</th>
-            </tr></thead>
-            <tbody id="tbody">
-              <tr><td colspan="10" class="loading">Carregando leads…</td></tr>
-            </tbody>
-          </table>
-        </div>
+      <div class="lista" id="lista">
+        <div class="loading">Carregando leads…</div>
       </div>
     </div>
   </div>
@@ -141,27 +134,32 @@
   function esc(s){ return String(s==null?"":s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
 
   function render(lista){
-    var tb = document.getElementById("tbody");
-    if(!lista.length){ tb.innerHTML = '<tr><td colspan="10" class="empty">Nenhum lead encontrado.</td></tr>'; return; }
-    tb.innerHTML = lista.map(function(l){
+    var box = document.getElementById("lista");
+    if(!lista.length){ box.innerHTML = '<div class="empty">Nenhum lead encontrado.</div>'; return; }
+    box.innerHTML = lista.map(function(l){
       var cat = l.categoria==="Quente" ? '<span class="pill quente">Quente</span>'
               : l.categoria==="Morno" ? '<span class="pill morno">Morno</span>'
               : '<span class="pill na">—</span>';
-      var fb = l.deuFeedback ? '<span class="fb-sim">✓ Sim</span>' : '<span class="fb-nao">—</span>';
-      var nps = (l.nps!=null) ? '<span class="nps">'+l.nps+'</span>' : '—';
-      var com = l.comentario ? '<div class="coment">"'+esc(l.comentario)+'"'+(l.autoriza?' <small style="color:#00C566">✓ autorizou uso</small>':'')+'</div>' : '<span class="fb-nao">—</span>';
-      return '<tr>'+
-        '<td>'+esc(l.hora)+'</td>'+
-        '<td class="resp"><b>'+esc(l.responsavel)+'</b></td>'+
-        '<td>'+esc(l.filho)+'</td>'+
-        '<td>'+esc(l.telefone)+'</td>'+
-        '<td>'+esc(l.bairro)+'</td>'+
-        '<td>'+cat+'</td>'+
-        '<td>'+esc(l.consultor)+'</td>'+
-        '<td>'+fb+'</td>'+
-        '<td>'+nps+'</td>'+
-        '<td>'+com+'</td>'+
-      '</tr>';
+      var fbLinha;
+      if(l.deuFeedback){
+        var nps = (l.nps!=null) ? ' · NPS <span class="nps">'+l.nps+'</span>' : '';
+        var com = l.comentario ? '<div class="coment">"'+esc(l.comentario)+'"'+(l.autoriza?' <span class="aut">✓ autorizou uso</span>':'')+'</div>' : '';
+        fbLinha = '<div class="fbbox"><span class="fb-sim">✓ Deu feedback</span>'+nps+com+'</div>';
+      } else {
+        fbLinha = '<div class="fbbox"><span class="fb-nao">Ainda não deu feedback</span></div>';
+      }
+      return '<div class="leadcard">'+
+        '<div class="top">'+
+          '<div class="who"><b>'+esc(l.responsavel)+'</b><small>'+esc(l.filho)+'</small></div>'+
+          '<div class="hora">'+esc(l.hora)+' · '+cat+'</div>'+
+        '</div>'+
+        '<div class="grid2">'+
+          '<div><span class="lbl">Telefone</span><span class="val">'+esc(l.telefone)+'</span></div>'+
+          '<div><span class="lbl">Bairro</span><span class="val">'+esc(l.bairro)+'</span></div>'+
+          '<div><span class="lbl">Consultor</span><span class="val">'+esc(l.consultor)+'</span></div>'+
+        '</div>'+
+        fbLinha+
+      '</div>';
     }).join("");
   }
 
@@ -183,7 +181,7 @@
       todos = d.lista || [];
       aplicaBusca();
     }catch(e){
-      document.getElementById("tbody").innerHTML = '<tr><td colspan="10" class="empty">Erro ao carregar: '+esc(e.message)+'</td></tr>';
+      document.getElementById("lista").innerHTML = '<div class="empty">Erro ao carregar: '+esc(e.message)+'</div>';
     }
   }
 
