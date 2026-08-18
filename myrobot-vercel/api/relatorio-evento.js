@@ -81,15 +81,44 @@ export default async function handler(req, res) {
     );
 
     // ?debug=1 -> mostra o que existe no funil, sem processar nada
+    // ?debug=campos -> mostra os campos crus do lead e do contato (pra achar
+    //                  por que o feedback ou o filho não aparecem no card)
     if (req.query.debug) {
-      return res.status(200).json({
+      const base = {
         ok: true,
         debug: true,
         eventoProcurado: eventoTag,
         leadsNoFunil: totalFunil,
         leadsComEssaTag: leads.length,
         tagsExistentesNoFunil: Array.from(todasTags).sort(),
-      });
+      };
+      if (String(req.query.debug) !== "campos") return res.status(200).json(base);
+
+      const amostra = [];
+      for (const l of leads.slice(0, 5)) {
+        const cRef = (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
+        let camposContato = null, contatoId = null;
+        if (cRef) {
+          contatoId = cRef.id;
+          const cr = await fetch(`${api}/contacts/${cRef.id}`, { headers: auth });
+          if (cr.ok) {
+            const c = await cr.json().catch(() => ({}));
+            camposContato = (c.custom_fields_values || []).map((f) => ({
+              nome: f.field_name, code: f.field_code, valor: f.values?.[0]?.value,
+            }));
+          }
+        }
+        amostra.push({
+          leadId: l.id,
+          leadNome: l.name,
+          contatoId,
+          camposDoLead: (l.custom_fields_values || []).map((f) => ({
+            id: f.field_id, nome: f.field_name, valor: f.values?.[0]?.value,
+          })),
+          camposDoContato: camposContato,
+        });
+      }
+      return res.status(200).json({ ...base, amostra });
     }
 
     // 2) Agrega + monta a lista detalhada por lead

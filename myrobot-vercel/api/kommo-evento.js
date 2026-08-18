@@ -106,8 +106,19 @@ export default async function handler(req, res) {
   try {
     const b = req.body || {};
 
-    const idade = b.fi ? `${String(b.fi).replace(/\D/g, "")} anos` : "";
-    const filho = [b.fn, idade].filter(Boolean).join(" — ");
+    // Filhos: aceita a lista nova (b.filhos) e continua aceitando o par antigo (b.fn/b.fi).
+    const listaFilhos = Array.isArray(b.filhos) && b.filhos.length
+      ? b.filhos
+      : [{ nome: b.fn, idade: b.fi }];
+    const fmtFilho = (f) => {
+      const n = String(f?.nome || "").trim();
+      const id = String(f?.idade || "").replace(/\D/g, "");
+      return [n, id ? `${id} anos` : ""].filter(Boolean).join(" — ");
+    };
+    const filhosTxt = listaFilhos.map(fmtFilho).filter(Boolean);
+    const filho = filhosTxt.join(" · ");
+    const idade = String(listaFilhos[0]?.idade || "").replace(/\D/g, "");
+    const primeiroNome = String(listaFilhos[0]?.nome || "").trim();
     const evento = b.evento || "Evento";
 
     // ---- Qualificação automática ----
@@ -136,12 +147,12 @@ export default async function handler(req, res) {
     if (b.evento) tags.push({ name: String(b.evento).slice(0, 40) });
 
     const payload = [{
-      name: `Evento — ${b.fn || "aluno(a)"} (${b.rn || "responsável"})`,
+      name: `Evento — ${primeiroNome || "aluno(a)"}${listaFilhos.length > 1 ? ` +${listaFilhos.length - 1}` : ""} (${b.rn || "responsável"})`,
       pipeline_id: PIPELINE_ID,
       status_id: STATUS_ID,
       custom_fields_values: leadFields,
       _embedded: {
-        contacts: [{ name: b.rn || b.fn || "Lead de evento", custom_fields_values: contactFields }],
+        contacts: [{ name: b.rn || primeiroNome || "Lead de evento", custom_fields_values: contactFields }],
         tags,
       },
     }];
@@ -168,8 +179,8 @@ export default async function handler(req, res) {
         `Data: ${b.data || "-"}`,
         `Consultor: ${b.consultor || "-"}`,
         "",
-        `Aluno: ${b.fn || "-"}`,
-        `Idade: ${idade || "-"}`,
+        `Aluno(s): ${filho || "-"}`,
+        `Idade: ${idade ? idade + " anos" : "-"}`,
         `Responsável: ${b.rn || "-"}`,
         `Telefone: ${b.wn || "-"}`,
         `Bairro: ${b.bairro || "-"}`,
