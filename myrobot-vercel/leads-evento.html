@@ -173,10 +173,11 @@
       }
       return '<div class="leadcard">'+
         '<div class="top">'+
-          '<div class="who"><b>'+esc(l.responsavel)+'</b><small>'+esc(l.filho)+'</small></div>'+
+          '<div class="who"><b>'+esc(l.responsavel)+'</b></div>'+
           '<div class="hora">'+esc(l.hora)+' · '+cat+'</div>'+
         '</div>'+
         '<div class="grid2">'+
+          '<div style="grid-column:1 / -1"><span class="lbl">Filho(a)</span><span class="val">'+esc(l.filho||"—")+'</span></div>'+
           '<div><span class="lbl">Telefone</span><span class="val">'+esc(l.telefone)+'</span></div>'+
           '<div><span class="lbl">Bairro</span><span class="val">'+esc(l.bairro)+'</span></div>'+
           '<div><span class="lbl">Consultor</span><span class="val">'+esc(l.consultor)+'</span></div>'+

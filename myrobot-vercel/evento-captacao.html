@@ -38,6 +38,14 @@
   .row{display:flex;gap:12px;}
   .row .col{flex:1;}
   .row .col.idade{flex:0 0 38%;}
+  .filho-row{display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;}
+  .filho-row .fnome{flex:1;}
+  .filho-row .fidade{flex:0 0 30%;}
+  .filho-row .fdel{flex:0 0 44px;height:47px;border:1.5px solid var(--borda);background:#fff;
+    border-radius:11px;color:var(--cinza);font-size:20px;line-height:1;cursor:pointer;}
+  .filho-row .fdel:hover{border-color:#c0392b;color:#c0392b;}
+  .add-filho{background:none;border:none;color:var(--laranja);font-weight:700;font-size:14px;
+    cursor:pointer;padding:2px 0 0;font-family:inherit;}
   .send{width:100%;margin-top:20px;background:var(--laranja);color:#fff;border:none;border-radius:12px;
     padding:15px;font-size:16px;font-weight:800;cursor:pointer;}
   .send:disabled{opacity:.6;}
@@ -147,19 +155,12 @@
       <label>Seu WhatsApp</label>
       <input id="wn" type="tel" inputmode="tel" placeholder="(92) 9xxxx-xxxx" autocomplete="off">
 
-      <label>Nome do seu filho(a)</label>
-      <input id="fn" type="text" placeholder="Nome da criança" autocomplete="off">
+      <label>Filho(a)</label>
+      <div id="filhos"></div>
+      <button type="button" class="add-filho" id="addFilho">+ Adicionar outro filho</button>
 
-      <div class="row">
-        <div class="col idade">
-          <label>Idade</label>
-          <input id="fi" type="number" inputmode="numeric" placeholder="Ex: 8" min="1" max="18">
-        </div>
-        <div class="col">
-          <label>Bairro</label>
-          <input id="bairro" type="text" placeholder="Onde vocês moram" autocomplete="off">
-        </div>
-      </div>
+      <label>Bairro</label>
+      <input id="bairro" type="text" placeholder="Onde vocês moram" autocomplete="off">
 
       <div class="err" id="err">Preencha ao menos seu nome e seu WhatsApp.</div>
       <button class="send" id="enviar">Cadastrar e gerar voucher</button>
@@ -206,16 +207,47 @@
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;
 
   var $ = function(id){ return document.getElementById(id); };
-  function digits(s){ return String(s||"").replace(/\\D/g,""); }
+  function digits(s){ return String(s||"").replace(/\D/g,""); }
+
+  // ---- filhos (um ou vários) ----
+  function linhaFilho(primeira){
+    var d = document.createElement("div");
+    d.className = "filho-row";
+    d.innerHTML =
+      '<div class="fnome"><input type="text" class="f-nome" placeholder="Nome da criança" autocomplete="off"></div>' +
+      '<div class="fidade"><input type="number" class="f-idade" inputmode="numeric" placeholder="Idade" min="1" max="18"></div>' +
+      (primeira ? '' : '<button type="button" class="fdel" aria-label="Remover">×</button>');
+    var del = d.querySelector(".fdel");
+    if (del) del.addEventListener("click", function(){ d.remove(); });
+    return d;
+  }
+  $("filhos").appendChild(linhaFilho(true));
+  $("addFilho").addEventListener("click", function(){
+    $("filhos").appendChild(linhaFilho(false));
+    var ins = $("filhos").querySelectorAll(".f-nome");
+    ins[ins.length-1].focus();
+  });
+  function lerFilhos(){
+    var out = [];
+    $("filhos").querySelectorAll(".filho-row").forEach(function(r){
+      var n = r.querySelector(".f-nome").value.trim();
+      var i = r.querySelector(".f-idade").value.trim();
+      if (n || i) out.push({ nome: n, idade: i });
+    });
+    return out;
+  }
 
   $("enviar").addEventListener("click", function(){
     var rn = $("rn").value.trim();
     var wn = $("wn").value.trim();
     if (!rn || digits(wn).length < 10) { $("err").style.display = "block"; return; }
     $("err").style.display = "none";
+    var filhos = lerFilhos();
     var dados = {
       consultor: $("consultor").value.trim(),
-      fn: $("fn").value.trim(), fi: $("fi").value.trim(),
+      filhos: filhos,
+      // compatibilidade: o primeiro filho continua indo nos campos antigos
+      fn: (filhos[0] && filhos[0].nome) || "", fi: (filhos[0] && filhos[0].idade) || "",
       rn: rn, wn: wn, bairro: $("bairro").value.trim(),
       evento: EVENTO, local: LOCAL, data: DATA
     };
