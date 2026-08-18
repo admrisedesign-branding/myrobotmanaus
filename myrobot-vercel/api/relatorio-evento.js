@@ -94,6 +94,21 @@ export default async function handler(req, res) {
       };
       if (String(req.query.debug) !== "campos") return res.status(200).json(base);
 
+      // catálogo de campos de LEAD da conta (id + nome + tipo), pra conferir
+      // se o FIELD.filho usado na gravação é mesmo o campo certo
+      const catalogo = [];
+      let cp = 1;
+      while (cp <= 10) {
+        const cr = await fetch(`${api}/leads/custom_fields?limit=250&page=${cp}`, { headers: auth });
+        if (cr.status === 204 || !cr.ok) break;
+        const cd = await cr.json().catch(() => ({}));
+        const cfs = cd?._embedded?.custom_fields || [];
+        if (!cfs.length) break;
+        cfs.forEach((f) => catalogo.push({ id: f.id, nome: f.name, tipo: f.type }));
+        if (!cd?._links?.next) break;
+        cp++;
+      }
+
       const amostra = [];
       for (const l of leads.slice(0, 5)) {
         const cRef = (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
@@ -118,7 +133,7 @@ export default async function handler(req, res) {
           camposDoContato: camposContato,
         });
       }
-      return res.status(200).json({ ...base, amostra });
+      return res.status(200).json({ ...base, camposDeLeadDaConta: catalogo, amostra });
     }
 
     // 2) Agrega + monta a lista detalhada por lead
