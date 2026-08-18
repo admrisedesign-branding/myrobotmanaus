@@ -158,11 +158,15 @@
   function sucesso(d){
     var primeiro = (d.rn||"").split(" ")[0];
     $("doneName").textContent = primeiro ? ("Obrigado, " + primeiro + "! 🎉") : "Cadastro feito! 🎉";
-    var aluno = d.fn ? d.fn : "seu filho(a)";
-    var msg =
-      "Oi, " + (primeiro||"") + "! Que alegria conhecer vocês no Manaus Plaza! 🤖\\n" +
-      "Aqui é da My Robot Manaus. O(a) " + aluno + " ganhou um voucher de R$ 150 🎉\\n" +
-      "Em breve nosso time entra em contato pra te explicar certinho como usar. Fica de olho! 💙";
+    var alunoNome = d.fn ? d.fn.split(" ")[0] : "";
+    var alunoRef = alunoNome ? ("o(a) " + alunoNome) : "seu filho(a)";
+    var msg = [
+      "Oi, " + (primeiro||"") + "! 🤖 Aqui é da My Robot Manaus.",
+      "Foi um prazer receber vocês no Manaus Plaza! 💙",
+      "",
+      "Como prometido, " + alunoRef + " ganhou um voucher de R$ 150 🎉",
+      "Nosso time vai te chamar pra explicar certinho como usar — fica de olho! ✨"
+    ].join("\n");
     var tel = digits(d.wn);
     if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
     $("waBtn").href = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
