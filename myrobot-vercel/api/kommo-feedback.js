@@ -159,8 +159,11 @@ export default async function handler(req, res) {
     // 3) Nota legível na timeline
     const alvo = noteAlvo || (contactId ? { tipo: "contacts", id: contactId } : null);
     if (alvo) {
+      const titulo = b.origem_feedback
+        ? `FEEDBACK (${b.origem_feedback})`
+        : "FEEDBACK (formulário de matriculados)";
       const texto =
-        "FEEDBACK (formulário de matriculados)\n" +
+        titulo + "\n" +
         `Responsável: ${b.responsavel || "-"}\n` +
         `Aluno: ${b.aluno || "-"}\n` +
         `NPS: ${nps == null ? "-" : nps}/10 (${classificarNPS(nps) || "-"})\n` +
