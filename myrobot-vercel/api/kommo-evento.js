@@ -42,13 +42,36 @@ function normalizePhone(s) {
 export default async function handler(req, res) {
   // CORS liberado (formulário é público, rodando no tablet dos consultores)
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS, GET");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   const token = process.env.KOMMO_TOKEN;
   if (!token) return res.status(500).json({ error: "KOMMO_TOKEN não configurado na Vercel" });
+
+  // ---- MODO DIAGNÓSTICO: GET ?diag=myrobot2026 lista os campos de lead e as opções ----
+  if (req.method === "GET") {
+    if ((req.query.diag || "") !== "myrobot2026") {
+      return res.status(403).json({ error: "diag key inválida" });
+    }
+    try {
+      const r = await fetch(`https://${SUBDOMAIN}.kommo.com/api/v4/leads/custom_fields?limit=250`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await r.json().catch(() => ({}));
+      const campos = (data?._embedded?.custom_fields || []).map((f) => ({
+        id: f.id,
+        nome: f.name,
+        tipo: f.type,
+        opcoes: (f.enums || []).map((e) => ({ id: e.id, valor: e.value })),
+      }));
+      return res.status(200).json({ ok: true, campos });
+    } catch (err) {
+      return res.status(500).json({ error: String(err) });
+    }
+  }
+
+  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
     const b = req.body || {};
