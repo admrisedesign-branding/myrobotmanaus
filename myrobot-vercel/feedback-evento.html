@@ -52,6 +52,8 @@
   .thanks .p{color:var(--cinza);font-size:14.5px;margin-bottom:18px;}
   .quote{background:var(--bg);border:1px dashed var(--laranja);border-radius:12px;padding:14px;
     font-size:14px;color:#3a3a3a;text-align:left;margin-bottom:8px;white-space:pre-wrap;}
+  .hint{color:var(--cinza);font-size:13px;margin-top:10px;}
+  .hint.ok{color:var(--verde);font-weight:700;}
   .step{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:16px;margin-top:14px;text-align:left;}
   .step .n{display:inline-block;width:22px;height:22px;background:var(--laranja);color:#fff;border-radius:50%;
     text-align:center;line-height:22px;font-size:12px;font-weight:800;margin-right:7px;}
@@ -59,7 +61,7 @@
   .btn-copy{width:100%;margin-top:10px;background:#fff;border:1.5px solid var(--laranja);color:var(--laranja);
     border-radius:11px;padding:13px;font-size:15px;font-weight:700;cursor:pointer;}
   .btn-copy.copied{background:var(--verde);border-color:var(--verde);color:#fff;}
-  .btn-google{display:block;width:100%;margin-top:10px;background:#4285F4;color:#fff;text-decoration:none;
+  .btn-google{display:block;width:100%;margin-top:16px;background:#4285F4;color:#fff;text-decoration:none;
     border-radius:11px;padding:14px;font-size:15.5px;font-weight:800;text-align:center;}
 </style>
 </head>
@@ -107,20 +109,13 @@
   <div id="thanks-view" class="thanks">
     <div class="card">
       <div class="ok">✓</div>
-      <h2>Obrigada de coração! 💙</h2>
-      <div class="p">Seu retorno foi registrado. Que tal dar uma força enorme pra gente e avaliar no Google?</div>
+      <h2>Obrigada! 🧡</h2>
+      <div class="p">Seu comentário pode virar uma avaliação no Google.</div>
 
-      <div class="step">
-        <div><span class="n">1</span><b>Copie seu comentário</b></div>
-        <div class="quote" id="quote"></div>
-        <button class="btn-copy" id="copy">📋 Copiar meu comentário</button>
-      </div>
+      <div class="quote" id="quote"></div>
 
-      <div class="step">
-        <div><span class="n">2</span><b>Cole na avaliação do Google</b></div>
-        <p style="color:var(--cinza);font-size:13.5px;margin:6px 0 2px;">Abre em uma nova aba — é só colar e escolher as estrelas. Leva 30 segundos e ajuda demais a My Robot a crescer! ⭐</p>
-        <a class="btn-google" id="google" target="_blank" rel="noopener">⭐ Avaliar no Google</a>
-      </div>
+      <a class="btn-google" id="google" target="_blank" rel="noopener">Copiar e avaliar no Google</a>
+      <div class="hint" id="hint">Abre o Google — é só colar e tocar nas estrelas.</div>
     </div>
     <div class="foot">Muito obrigada por visitar a My Robot! 🤖</div>
   </div>
@@ -194,15 +189,24 @@
     window.scrollTo(0,0);
   };
 
-  $('copy').onclick = async () => {
-    try{ await navigator.clipboard.writeText($('quote').textContent); }
-    catch(e){
-      const r=document.createRange();r.selectNode($('quote'));
-      window.getSelection().removeAllRanges();window.getSelection().addRange(r);
-      document.execCommand('copy');window.getSelection().removeAllRanges();
-    }
-    const b=$('copy');b.classList.add('copied');b.textContent="✓ Copiado! Agora é só colar no Google";
-  };
+  // Um toque só: copia (síncrono, pra funcionar no Safari) e deixa o link abrir o Google.
+  $('google').addEventListener('click', function(){
+    const txt = $('quote').textContent;
+    try {
+      const ta = document.createElement('textarea');
+      ta.value = txt;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed'; ta.style.top = '-1000px';
+      document.body.appendChild(ta);
+      ta.select(); ta.setSelectionRange(0, txt.length);
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    } catch(e){}
+    if (navigator.clipboard) { navigator.clipboard.writeText(txt).catch(function(){}); }
+    const hint = $('hint');
+    hint.textContent = '✓ Comentário copiado — é só colar lá';
+    hint.classList.add('ok');
+  });
 </script>
 </body>
 </html>
