@@ -5,7 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <link rel="icon" type="image/png" href="/favicon.png" sizes="512x512">
 <link rel="apple-touch-icon" href="/favicon.png">
-<meta name="theme-color" content="#15243A">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#FF4D00">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Captação">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
 <title>My Robot Manaus — Captação de Evento</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Cabinet+Grotesk:wght@400;700;800&family=Instrument+Sans:wght@400;500;600&display=swap');
@@ -185,9 +191,16 @@
 
 <script>
   var qs = new URLSearchParams(location.search);
-  var EVENTO = qs.get("evento") || "Robô Humanoide - Plaza (19/08)";
-  var LOCAL  = qs.get("local")  || "Manaus Plaza Shopping - Centro de Convenções";
-  var DATA   = qs.get("data")   || "19/08/2026";
+  // Quando abre pelo link do evento, guarda. Quando abre pelo ícone do app
+  // (sem parâmetros na URL), reusa o último evento salvo.
+  var _sv = {};
+  try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
+  var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
+  var LOCAL  = qs.get("local")  || _sv.local  || "Manaus Plaza Shopping - Centro de Convenções";
+  var DATA   = qs.get("data")   || _sv.data   || "19/08/2026";
+  if (qs.get("evento")) {
+    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA})); } catch(e){}
+  }
   document.getElementById("evtag").textContent = "📍 " + LOCAL + " · " + DATA;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;
 
@@ -261,5 +274,13 @@
   })();
 </script>
 
+
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('/sw.js').catch(function(){});
+    });
+  }
+</script>
 </body>
 </html>
