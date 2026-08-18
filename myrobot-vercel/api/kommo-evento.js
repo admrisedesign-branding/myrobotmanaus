@@ -23,14 +23,44 @@ const PIPELINE_ID = 13965588;   // My Robot — Comercial 2026
 const STATUS_ID   = 107779724;  // Etapa de entrada (Novo Lead)
 
 const FIELD = {
-  bairro: 3880749,
-  origem: 3880751,
-  filho:  3880753,
+  score:        3880739,  // numeric
+  categoria:    3880741,  // select
+  bairro:       3880749,
+  origem:       3880751,
+  filho:        3880753,
+  comportamento:3881421,  // multiselect
 };
+
+// IDs das opções (do diagnóstico)
+const CATEGORIA = { Quente: 4299211, Morno: 4299213, Frio: 4299215 };
+const COMPORT_EVENTO = 4299859; // "Participou de evento"
+
+// Bairros nobres (público quente). Comparação sem acento/maiúscula, por "contém".
+const BAIRROS_NOBRES = [
+  "adrianopolis", "ponta negra", "gracas", "vieiralves", "nossa senhora",
+  "parque 10", "parque dez", "flores", "aleixo", "chapada", "dom pedro",
+  "morada do sol", "conjunto morada", "sao francisco",
+];
+function semAcento(s) {
+  return String(s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+}
+function ehBairroNobre(bairro) {
+  const b = semAcento(bairro);
+  if (!b) return false;
+  return BAIRROS_NOBRES.some((n) => b.includes(n));
+}
 
 function txt(id, value) {
   if (!id || value == null || String(value).trim() === "") return null;
   return { field_id: id, values: [{ value: String(value) }] };
+}
+function selectField(id, enumId) {
+  if (!id || !enumId) return null;
+  return { field_id: id, values: [{ enum_id: enumId }] };
+}
+function multiselectField(id, enumIds) {
+  if (!id || !enumIds || !enumIds.length) return null;
+  return { field_id: id, values: enumIds.map((e) => ({ enum_id: e })) };
 }
 function normalizePhone(s) {
   if (!s) return "";
@@ -80,8 +110,17 @@ export default async function handler(req, res) {
     const filho = [b.fn, idade].filter(Boolean).join(" — ");
     const evento = b.evento || "Evento";
 
+    // ---- Qualificação automática ----
+    // Bairro nobre => Quente (score 70). Fora da lista => Morno (score 50).
+    const nobre = ehBairroNobre(b.bairro);
+    const catId = nobre ? CATEGORIA.Quente : CATEGORIA.Morno;
+    const score = nobre ? 70 : 50;
+
     // Campos do lead
     const leadFields = [
+      txt(FIELD.score, score),
+      selectField(FIELD.categoria, catId),
+      multiselectField(FIELD.comportamento, [COMPORT_EVENTO]),
       txt(FIELD.bairro, b.bairro),
       txt(FIELD.origem, "evento"),   // origem padronizada = evento
       txt(FIELD.filho, filho),
@@ -92,8 +131,8 @@ export default async function handler(req, res) {
     const phone = normalizePhone(b.wn);
     if (phone) contactFields.push({ field_code: "PHONE", values: [{ value: phone, enum_code: "WORK" }] });
 
-    // Tags: evento + nome do evento (pra filtrar por evento específico)
-    const tags = [{ name: "evento" }];
+    // Tags: evento + nome do evento + categoria (pra filtrar fácil)
+    const tags = [{ name: "evento" }, { name: nobre ? "Quente" : "Morno" }];
     if (b.evento) tags.push({ name: String(b.evento).slice(0, 40) });
 
     const payload = [{
@@ -134,6 +173,7 @@ export default async function handler(req, res) {
         `Responsável: ${b.rn || "-"}`,
         `Telefone: ${b.wn || "-"}`,
         `Bairro: ${b.bairro || "-"}`,
+        `Categoria: ${nobre ? "Quente" : "Morno"} (score ${score})`,
         "",
         "Isca entregue: voucher R$ 150",
       ].join("\n");
