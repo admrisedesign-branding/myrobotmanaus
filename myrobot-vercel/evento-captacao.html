@@ -198,8 +198,9 @@
   var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
   var LOCAL  = qs.get("local")  || _sv.local  || "Manaus Plaza Shopping - Centro de Convenções";
   var DATA   = qs.get("data")   || _sv.data   || "19/08/2026";
+  var KEY = qs.get("key") || _sv.key || "myrobot2026";
   if (qs.get("evento")) {
-    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA})); } catch(e){}
+    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA, key:KEY})); } catch(e){}
   }
   document.getElementById("evtag").textContent = "📍 " + LOCAL + " · " + DATA;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;

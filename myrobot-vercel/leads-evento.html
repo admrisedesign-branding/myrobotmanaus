@@ -140,8 +140,16 @@
 
 <script>
   var qs = new URLSearchParams(location.search);
-  var EVENTO = qs.get("evento") || "Robô Humanoide - Plaza (19/08)";
-  var KEY = qs.get("key") || "myrobot2026";
+  // Aberto pelo ícone do app a URL vem sem parâmetros — reusa o último evento
+  // salvo pelo formulário, senão as páginas consultam eventos diferentes.
+  var _sv = {};
+  try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
+  var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
+  var KEY = qs.get("key") || _sv.key || "myrobot2026";
+  if (qs.get("evento")) {
+    _sv.evento = EVENTO; _sv.key = KEY;
+    try { localStorage.setItem("mr_evento", JSON.stringify(_sv)); } catch(e){}
+  }
   document.getElementById("evName").textContent = EVENTO;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;
 
@@ -150,7 +158,7 @@
 
   function render(lista){
     var box = document.getElementById("lista");
-    if(!lista.length){ box.innerHTML = '<div class="empty">Nenhum lead encontrado.</div>'; return; }
+    if(!lista.length){ box.innerHTML = '<div class="empty">Nenhum lead com a tag<br><b>'+esc(EVENTO)+'</b></div>'; return; }
     box.innerHTML = lista.map(function(l){
       var cat = l.categoria==="Quente" ? '<span class="pill quente">Quente</span>'
               : l.categoria==="Morno" ? '<span class="pill morno">Morno</span>'

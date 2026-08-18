@@ -196,8 +196,16 @@
 
 <script>
   const params = new URLSearchParams(location.search);
-  const EVENTO = params.get("evento") || "Robô Humanoide - Plaza (19/08)";
-  const KEY = params.get("key") || "myrobot2026";
+  // Aberto pelo ícone do app a URL vem sem parâmetros — reusa o último evento
+  // salvo pelo formulário, senão as páginas consultam eventos diferentes.
+  let _sv = {};
+  try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
+  const EVENTO = params.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
+  const KEY = params.get("key") || _sv.key || "myrobot2026";
+  if (params.get("evento")) {
+    _sv.evento = EVENTO; _sv.key = KEY;
+    try { localStorage.setItem("mr_evento", JSON.stringify(_sv)); } catch(e){}
+  }
   document.getElementById("evName").textContent = EVENTO;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;
 
