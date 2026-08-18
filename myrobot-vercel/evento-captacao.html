@@ -200,8 +200,9 @@
   var LOCAL  = qs.get("local")  || _sv.local  || "Manaus Plaza Shopping - Centro de Convenções";
   var DATA   = qs.get("data")   || _sv.data   || "19/08/2026";
   var KEY = qs.get("key") || _sv.key || "myrobot2026";
+  var VOUCHER = qs.get("voucher") || _sv.voucher || "150";
   if (qs.get("evento")) {
-    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA, key:KEY})); } catch(e){}
+    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA, key:KEY, voucher:VOUCHER})); } catch(e){}
   }
   document.getElementById("evtag").textContent = "📍 " + LOCAL + " · " + DATA;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;
@@ -263,8 +264,20 @@
     var primeiro = (d.rn||"").split(" ")[0];
     var frases = ["Lead cadastrado! 🎉", "Boa! Mais um lead 🚀", "Mandou bem! ✨", "Isso! Lead salvo 🎯"];
     $("doneName").textContent = frases[Math.floor(Math.random()*frases.length)];
-    var alunoNome = d.fn ? d.fn.split(" ")[0] : "";
-    var alunoRef = alunoNome ? ("o(a) " + alunoNome) : "seu filho(a)";
+    // nomes dos filhos: "o(a) Miguel" / "o Miguel e a Sofia" / "Miguel, Sofia e Ana"
+    var nomes = (d.filhos || []).map(function(f){ return String(f.nome||"").trim().split(" ")[0]; })
+                                .filter(Boolean);
+    var alunoRef, verbo, cada;
+    if (nomes.length === 0) { alunoRef = "Seu filho(a)"; verbo = "saiu"; cada = ""; }
+    else if (nomes.length === 1) { alunoRef = nomes[0]; verbo = "saiu"; cada = ""; }
+    else {
+      alunoRef = nomes.slice(0, -1).join(", ") + " e " + nomes[nomes.length - 1];
+      verbo = "saíram";
+      cada = " cada";   // um voucher por criança
+    }
+
+    // local do evento, sem a parte depois do hífen ("Manaus Plaza Shopping - Centro..." -> "Manaus Plaza Shopping")
+    var localCurto = String(LOCAL || "").split(" - ")[0].trim() || "nosso evento";
 
     var tel = digits(d.wn);
     if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
@@ -275,13 +288,14 @@
       + "&wn=" + tel;
 
     var msg = [
-      "Oi, " + (primeiro||"") + "! Aqui é da My Robot Manaus.",
-      "Foi um prazer receber vocês no Manaus Plaza!",
+      "Oi, " + (primeiro||"") + "! Aqui é a My Robot Manaus 🧡",
       "",
-      "Como prometido, " + alunoRef + " ganhou um voucher de R$ 150.",
-      "Nosso time vai te chamar pra explicar certinho como usar. Fica de olho!",
+      "Que bom ter recebido vocês hoje no " + localCurto + ".",
       "",
-      "Ah, e se você curtiu o que viu no nosso estande, conta pra gente aqui? Leva 1 minutinho e ajuda demais:",
+      alunoRef + " " + verbo + " daqui com um voucher de R$ " + VOUCHER + cada +
+        " — nosso time te chama pra explicar direitinho como usar.",
+      "",
+      "E se sobrar 1 minutinho, conta pra gente como foi a experiência de vocês?",
       linkFeedback
     ].join("\n");
 
@@ -291,10 +305,13 @@
   }
 
   $("prox").addEventListener("click", function(){
-    ["fn","fi","rn","wn","bairro"].forEach(function(id){ $(id).value=""; });
+    ["rn","wn","bairro"].forEach(function(id){ $(id).value=""; });
+    $("filhos").innerHTML = "";
+    $("filhos").appendChild(linhaFilho(true));
     $("thanks").style.display = "none";
     $("form-view").style.display = "block";
-    window.scrollTo(0,0); $("fn").focus();
+    window.scrollTo(0,0);
+    $("filhos").querySelector(".f-nome").focus();
   });
 
   (function(){
