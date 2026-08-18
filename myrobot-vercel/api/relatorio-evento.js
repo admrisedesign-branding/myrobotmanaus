@@ -45,11 +45,14 @@ export default async function handler(req, res) {
   const api = `https://${SUBDOMAIN}.kommo.com/api/v4`;
 
   try {
-    // 1) Busca todos os leads com a tag do evento (paginando)
+    // 1) Busca os leads do FUNIL (paginando) e filtra pela tag do evento aqui.
+    //    Atenção: filter[tags][0] do Kommo espera o ID numérico da tag, não o
+    //    nome — passar o nome devolvia lista vazia sempre. Por isso o filtro
+    //    pelo nome da tag é feito no código, abaixo.
     let leads = [];
     let page = 1;
     for (;;) {
-      const url = `${api}/leads?filter[tags][0]=${encodeURIComponent(eventoTag)}`
+      const url = `${api}/leads?filter[pipeline_id]=${PIPELINE_ID}`
         + `&with=contacts&limit=250&page=${page}`;
       const r = await fetch(url, { headers: auth });
       if (!r.ok) break;
@@ -59,6 +62,34 @@ export default async function handler(req, res) {
       if (batch.length < 250) break;
       page++;
       if (page > 20) break; // trava de segurança
+    }
+
+    const totalFunil = leads.length;
+    const tagsDoLead = (l) => (l._embedded?.tags || []).map((t) => String(t.name || ""));
+    const todasTags = new Set();
+    leads.forEach((l) => tagsDoLead(l).forEach((t) => todasTags.add(t)));
+
+    // a gravação corta a tag em 40 caracteres (ver api/kommo-evento.js),
+    // então comparamos também com o nome cortado
+    const alvo = eventoTag.toLowerCase();
+    const alvoCurto = alvo.slice(0, 40);
+    leads = leads.filter((l) =>
+      tagsDoLead(l).some((t) => {
+        const n = t.toLowerCase();
+        return n === alvo || n === alvoCurto;
+      })
+    );
+
+    // ?debug=1 -> mostra o que existe no funil, sem processar nada
+    if (req.query.debug) {
+      return res.status(200).json({
+        ok: true,
+        debug: true,
+        eventoProcurado: eventoTag,
+        leadsNoFunil: totalFunil,
+        leadsComEssaTag: leads.length,
+        tagsExistentesNoFunil: Array.from(todasTags).sort(),
+      });
     }
 
     // 2) Agrega + monta a lista detalhada por lead
