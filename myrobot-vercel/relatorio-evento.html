@@ -370,6 +370,11 @@
       const r = await fetch("/api/relatorio-evento?evento="+encodeURIComponent(EVENTO)+"&key="+encodeURIComponent(KEY));
       const d = await r.json();
       if(!d.ok) throw new Error(d.error||"erro");
+      // trava: resposta vazia com cache cheio = falha da API, não evento zerado
+      if(!(d.lista||[]).length && cache && cache.d && (cache.d.lista||[]).length){
+        st.textContent = "A busca voltou vazia · mantendo os dados de "+hhmm(cache.ts);
+        return;
+      }
       dadosBrutos = d;
       salvaCache(d);
       montaDias();

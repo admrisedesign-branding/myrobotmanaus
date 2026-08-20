@@ -324,7 +324,14 @@
       var r = await fetch("/api/relatorio-evento?evento="+encodeURIComponent(EVENTO)+"&key="+encodeURIComponent(KEY));
       var d = await r.json();
       if(!d.ok) throw new Error(d.error||"erro");
-      todos = d.lista || [];
+      var novos = d.lista || [];
+      // trava: se já tínhamos leads e a resposta vem vazia, é falha da API —
+      // mantém o que está na tela em vez de apagar tudo
+      if(!novos.length && cache && cache.lista && cache.lista.length){
+        aviso("A busca voltou vazia · mantendo os dados de "+hhmm(cache.ts));
+        return;
+      }
+      todos = novos;
       salvaCache(todos);
       montaDias();
       aplicaBusca();
