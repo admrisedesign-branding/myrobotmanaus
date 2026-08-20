@@ -198,11 +198,16 @@
   try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
   var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
   var LOCAL  = qs.get("local")  || _sv.local  || "Manaus Plaza Shopping - Centro de Convenções";
-  var DATA   = qs.get("data")   || _sv.data   || "19/08/2026";
+  // Evento de vários dias: a data é sempre a de HOJE (Manaus, UTC-4).
+  // Antes vinha fixa do link/localStorage e travava no primeiro dia.
+  var _ag = new Date(Date.now() - 4*3600*1000);
+  var HOJE = String(_ag.getUTCDate()).padStart(2,"0") + "/" +
+             String(_ag.getUTCMonth()+1).padStart(2,"0") + "/" + _ag.getUTCFullYear();
+  var DATA = HOJE;
   var KEY = qs.get("key") || _sv.key || "myrobot2026";
   var VOUCHER = qs.get("voucher") || _sv.voucher || "150";
   if (qs.get("evento")) {
-    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, data:DATA, key:KEY, voucher:VOUCHER})); } catch(e){}
+    try { localStorage.setItem("mr_evento", JSON.stringify({evento:EVENTO, local:LOCAL, key:KEY, voucher:VOUCHER})); } catch(e){}
   }
   document.getElementById("evtag").textContent = "📍 " + LOCAL + " · " + DATA;
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = EVENTO;

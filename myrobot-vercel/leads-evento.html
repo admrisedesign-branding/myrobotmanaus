@@ -77,6 +77,12 @@
   .bar input{flex:1;min-width:200px;border:1.5px solid var(--borda);border-radius:12px;padding:12px 15px;font-size:14.5px;font-family:inherit;background:#fff;}
   .bar input:focus{outline:none;border-color:var(--lar1);}
   .bar .count{font-size:13px;color:var(--cinza);font-weight:600;white-space:nowrap;}
+  .dias{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px;}
+  .dias:empty{display:none;}
+  .dias button{border:1.5px solid #E7EBF2;background:#fff;color:#3a3550;border-radius:30px;
+    padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
+  .dias button:hover{border-color:#FF4D00;}
+  .dias button.on{background:#FF4D00;border-color:#FF4D00;color:#fff;}
   .bar button{background:#fff;color:var(--lar1);border:1.5px solid var(--lar1);border-radius:24px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 
   .lista{display:flex;flex-direction:column;gap:12px;}
@@ -132,6 +138,7 @@
         <span class="count" id="count">—</span>
         <button id="btnRefresh">↻ Atualizar</button>
       </div>
+      <div class="dias" id="dias"></div>
       <div class="lista" id="lista">
         <div class="loading">Carregando leads…</div>
       </div>
@@ -174,7 +181,7 @@
       return '<div class="leadcard">'+
         '<div class="top">'+
           '<div class="who"><b>'+esc(l.responsavel)+'</b></div>'+
-          '<div class="hora">'+esc(l.hora)+' · '+cat+'</div>'+
+          '<div class="hora">'+esc(l.dia ? l.dia+' '+l.hora : l.hora)+' · '+cat+'</div>'+
         '</div>'+
         '<div class="grid2">'+
           '<div style="grid-column:1 / -1"><span class="lbl">Filho(a)</span><span class="val">'+esc(l.filho||"—")+'</span></div>'+
@@ -187,12 +194,35 @@
     }).join("");
   }
 
+  var diaAtivo = "";   // "" = todos os dias
+
+  function montaDias(){
+    var box = document.getElementById("dias");
+    var mapa = {};
+    todos.forEach(function(l){ if(l.diaISO) mapa[l.diaISO] = l.dia; });
+    var isos = Object.keys(mapa).sort();
+    // um dia só? não precisa de filtro
+    if (isos.length < 2){ box.innerHTML = ""; diaAtivo = ""; return; }
+    var html = '<button data-dia="" class="'+(diaAtivo?"":"on")+'">Todos ('+todos.length+')</button>';
+    isos.forEach(function(iso){
+      var n = todos.filter(function(l){ return l.diaISO === iso; }).length;
+      html += '<button data-dia="'+iso+'" class="'+(diaAtivo===iso?"on":"")+'">'+esc(mapa[iso])+' ('+n+')</button>';
+    });
+    box.innerHTML = html;
+    box.querySelectorAll("button").forEach(function(b){
+      b.onclick = function(){ diaAtivo = b.getAttribute("data-dia"); montaDias(); aplicaBusca(); };
+    });
+  }
+
   function aplicaBusca(){
     var q = document.getElementById("busca").value.toLowerCase().trim();
-    var f = !q ? todos : todos.filter(function(l){
+    var f = todos;
+    if (diaAtivo) f = f.filter(function(l){ return l.diaISO === diaAtivo; });
+    if (q) f = f.filter(function(l){
       return [l.responsavel,l.filho,l.telefone,l.bairro,l.consultor,l.comentario].join(" ").toLowerCase().indexOf(q)>-1;
     });
-    document.getElementById("count").textContent = f.length + " de " + todos.length + " leads";
+    var base = diaAtivo ? todos.filter(function(l){ return l.diaISO === diaAtivo; }).length : todos.length;
+    document.getElementById("count").textContent = f.length + " de " + base + " leads";
     render(f);
   }
 
@@ -203,6 +233,7 @@
       var d = await r.json();
       if(!d.ok) throw new Error(d.error||"erro");
       todos = d.lista || [];
+      montaDias();
       aplicaBusca();
     }catch(e){
       document.getElementById("lista").innerHTML = '<div class="empty">Erro ao carregar: '+esc(e.message)+'</div>';
