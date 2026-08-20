@@ -157,6 +157,38 @@ export default async function handler(req, res) {
     }
 
     const leadsProc = leads.slice(0, 500); // trava de segurança
+
+    // ---- pré-carga em PARALELO ----------------------------------------
+    // Antes eram 2 requisições sequenciais por lead (contato + notas): com 25
+    // leads davam 50 idas e voltas em fila, ~15s. Agora vão de 12 em 12.
+    async function emLotes(itens, tamanho, fn) {
+      for (let i = 0; i < itens.length; i += tamanho) {
+        await Promise.all(itens.slice(i, i + tamanho).map(fn));
+      }
+    }
+
+    const contatoDe = (l) =>
+      (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
+
+    const idsContato = [...new Set(leadsProc.map((l) => contatoDe(l)?.id).filter(Boolean))];
+    const contatos = {};
+    await emLotes(idsContato, 12, async (id) => {
+      try {
+        const r = await fetch(`${api}/contacts/${id}`, { headers: auth });
+        contatos[id] = r.ok ? await r.json().catch(() => null) : null;
+      } catch (e) { contatos[id] = null; }
+    });
+
+    const notas = {};
+    await emLotes(leadsProc.map((l) => l.id), 12, async (id) => {
+      try {
+        const r = await fetch(`${api}/leads/${id}/notes?limit=50`, { headers: auth });
+        const d = r.ok ? await r.json().catch(() => ({})) : {};
+        notas[id] = d?._embedded?.notes || [];
+      } catch (e) { notas[id] = []; }
+    });
+    // -------------------------------------------------------------------
+
     for (const l of leadsProc) {
       // horário (Manaus UTC-4)
       const ts = (l.created_at || 0) * 1000;
@@ -191,7 +223,7 @@ export default async function handler(req, res) {
       const contatoRef = (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
       let telefone = "—", responsavel = "—", nps = null, comentario = "", autoriza = false, deuFeedback = false;
       if (contatoRef) {
-        const c = await lerContato(contatoRef.id);
+        const c = contatos[contatoRef.id];
         if (c) {
           responsavel = c.name || "—";
           const cfs = c.custom_fields_values || [];
@@ -217,10 +249,8 @@ export default async function handler(req, res) {
       // (o filho vem do campo do lead; se vier vazio, cai pra nota)
       let consultor = "—";
       let filhoNota = "";
-      const nr = await fetch(`${api}/leads/${l.id}/notes?limit=50`, { headers: auth });
-      if (nr.ok) {
-        const nd = await nr.json().catch(() => ({}));
-        for (const n of (nd?._embedded?.notes || [])) {
+      {
+        for (const n of (notas[l.id] || [])) {
           const txt = n.params?.text || "";
           if (consultor === "—") {
             const m = txt.match(/Consultor:\s*(.+)/i);
