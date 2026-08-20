@@ -83,6 +83,8 @@
     padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
   .dias button:hover{border-color:#FF4D00;}
   .dias button.on{background:#FF4D00;border-color:#FF4D00;color:#fff;}
+  .dias button.vazio{color:#9891a8;border-style:dashed;}
+  .dias button.vazio.on{color:#fff;border-style:solid;}
   .bar button{background:#fff;color:var(--lar1);border:1.5px solid var(--lar1);border-radius:24px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
 
   .lista{display:flex;flex-direction:column;gap:12px;}
@@ -193,7 +195,12 @@
 
   function render(lista){
     var box = document.getElementById("lista");
-    if(!lista.length){ box.innerHTML = '<div class="empty">Nenhum lead com a tag<br><b>'+esc(EVENTO)+'</b></div>'; return; }
+    if(!lista.length){
+      var msg = diaAtivo
+        ? 'Nenhum lead em <b>'+esc(rotuloDia(diaAtivo))+'</b> ainda.'
+        : 'Nenhum lead com a tag<br><b>'+esc(EVENTO)+'</b>';
+      box.innerHTML = '<div class="empty">'+msg+'</div>'; return;
+    }
     box.innerHTML = lista.map(function(l){
       var cat = l.categoria==="Quente" ? '<span class="pill quente">Quente</span>'
               : l.categoria==="Morno" ? '<span class="pill morno">Morno</span>'
@@ -224,17 +231,45 @@
 
   var diaAtivo = "";   // "" = todos os dias
 
+
+  // Dias do evento (mesmo sem lead ainda) — o evento virou de vários dias e o
+  // time precisa ver 20/08 e 21/08 antes do primeiro cadastro do dia.
+  // Dá pra trocar pelo link: ?dias=2026-08-19,2026-08-20,2026-08-21
+  function qsDias(){
+    var raw = new URLSearchParams(location.search).get("dias") || "";
+    var out = raw.split(",").map(function(s){
+      s = s.trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+      var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);   // dd/mm/aaaa
+      if (m) return m[3]+"-"+String(m[2]).padStart(2,"0")+"-"+String(m[1]).padStart(2,"0");
+      return "";
+    }).filter(Boolean);
+    if (out.length) {
+      try { var s2 = JSON.parse(localStorage.getItem("mr_evento")||"{}"); s2.dias = out;
+            localStorage.setItem("mr_evento", JSON.stringify(s2)); } catch(e){}
+    }
+    return out;
+  }
+  var DIAS_EVENTO = (function(){
+    var p = qsDias();
+    if (p.length) return p;
+    try { var s = JSON.parse(localStorage.getItem("mr_evento")||"{}"); if (s.dias && s.dias.length) return s.dias; } catch(e){}
+    return ["2026-08-19","2026-08-20","2026-08-21"];
+  })();
+  function rotuloDia(iso){ var p = iso.split("-"); return p[2]+"/"+p[1]; }
+
   function montaDias(){
     var box = document.getElementById("dias");
     var mapa = {};
     todos.forEach(function(l){ if(l.diaISO) mapa[l.diaISO] = l.dia; });
+    DIAS_EVENTO.forEach(function(iso){ if(!mapa[iso]) mapa[iso] = rotuloDia(iso); });
     var isos = Object.keys(mapa).sort();
-    // um dia só? não precisa de filtro
-    if (isos.length < 1){ box.innerHTML = ""; diaAtivo = ""; return; }   // sem leads ainda
+    if (!isos.length){ box.innerHTML = ""; diaAtivo = ""; return; }
     var html = '<button data-dia="" class="'+(diaAtivo?"":"on")+'">Todos ('+todos.length+')</button>';
     isos.forEach(function(iso){
       var n = todos.filter(function(l){ return l.diaISO === iso; }).length;
-      html += '<button data-dia="'+iso+'" class="'+(diaAtivo===iso?"on":"")+'">'+esc(mapa[iso])+' ('+n+')</button>';
+      var cls = (diaAtivo===iso?"on ":"") + (n?"":"vazio");
+      html += '<button data-dia="'+iso+'" class="'+cls.trim()+'">'+esc(mapa[iso])+' ('+n+')</button>';
     });
     box.innerHTML = html;
     box.querySelectorAll("button").forEach(function(b){
