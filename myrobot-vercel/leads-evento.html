@@ -83,6 +83,8 @@
     padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
   .dias button:hover{border-color:#FF4D00;}
   .dias button.on{background:#FF4D00;border-color:#FF4D00;color:#fff;}
+  .aviso{font-size:12.5px;color:var(--cinza);margin:-6px 0 12px;}
+  .aviso:empty{display:none;}
   .dias button.vazio{color:#9891a8;border-style:dashed;}
   .dias button.vazio.on{color:#fff;border-style:solid;}
   .bar button{background:#fff;color:var(--lar1);border:1.5px solid var(--lar1);border-radius:24px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -160,6 +162,7 @@
         <button id="btnRefresh">↻ Atualizar</button>
       </div>
       <div class="dias" id="dias"></div>
+      <div class="aviso" id="aviso"></div>
       <div class="lista" id="lista">
         <div class="loading">Carregando leads…</div>
       </div>
@@ -289,17 +292,49 @@
     render(f);
   }
 
+  // ---- cache local: a lista da última atualização aparece na hora ----
+  var CACHE_KEY = "mr_leads_" + EVENTO;
+  function salvaCache(lista){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), lista: lista })); }catch(e){}
+  }
+  function leCache(){
+    try{ return JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); }catch(e){ return null; }
+  }
+  function hhmm(ts){
+    return new Date(ts).toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  }
+  function aviso(txt){
+    var el = document.getElementById("aviso");
+    if(el) el.textContent = txt || "";
+  }
+
   async function carregar(){
-    document.getElementById("count").textContent = "carregando…";
+    var cache = leCache();
+    if(cache && cache.lista){
+      if(!todos.length){          // primeira carga: pinta o cache antes de buscar
+        todos = cache.lista;
+        montaDias();
+        aplicaBusca();
+      }
+      aviso("Dados de "+hhmm(cache.ts)+" · atualizando…");
+    }else{
+      document.getElementById("count").textContent = "carregando…";
+    }
     try{
       var r = await fetch("/api/relatorio-evento?evento="+encodeURIComponent(EVENTO)+"&key="+encodeURIComponent(KEY));
       var d = await r.json();
       if(!d.ok) throw new Error(d.error||"erro");
       todos = d.lista || [];
+      salvaCache(todos);
       montaDias();
       aplicaBusca();
+      aviso("Atualizado às "+hhmm(Date.now()));
     }catch(e){
-      document.getElementById("lista").innerHTML = '<div class="empty">Erro ao carregar: '+esc(e.message)+'</div>';
+      if(cache){
+        aviso("Sem conexão · mostrando dados de "+hhmm(cache.ts));
+      }else{
+        document.getElementById("lista").innerHTML = '<div class="empty">Erro ao carregar: '+esc(e.message)+'</div>';
+      }
     }
   }
 

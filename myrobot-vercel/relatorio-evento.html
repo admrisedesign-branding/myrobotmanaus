@@ -340,18 +340,45 @@
     render(agrega(lista));
   }
 
+  // ---- cache local: mostra os números da última atualização na hora, e
+  //      busca os novos por trás. Evita a tela em branco durante a espera.
+  const CACHE_KEY = "mr_rel_" + EVENTO;
+  function salvaCache(d){
+    try{ localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), d: d })); }catch(e){}
+  }
+  function leCache(){
+    try{ return JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); }catch(e){ return null; }
+  }
+  function hhmm(ts){
+    return new Date(ts).toLocaleTimeString("pt-BR", { hour:"2-digit", minute:"2-digit" });
+  }
+
   async function carregar(){
-    document.getElementById("status").textContent = "Atualizando…";
+    const st = document.getElementById("status");
+    const cache = leCache();
+    if(cache && cache.d){
+      if(!dadosBrutos){            // primeira carga: pinta o cache antes de buscar
+        dadosBrutos = cache.d;
+        montaDias();
+        aplicaDia();
+      }
+      st.textContent = "Dados de "+hhmm(cache.ts)+" · atualizando…";
+    } else {
+      st.textContent = "Carregando…";
+    }
     try{
       const r = await fetch("/api/relatorio-evento?evento="+encodeURIComponent(EVENTO)+"&key="+encodeURIComponent(KEY));
       const d = await r.json();
       if(!d.ok) throw new Error(d.error||"erro");
       dadosBrutos = d;
+      salvaCache(d);
       montaDias();
       aplicaDia();
-      document.getElementById("status").textContent = "Atualizado agora · "+new Date().toLocaleTimeString("pt-BR");
+      st.textContent = "Atualizado agora · "+new Date().toLocaleTimeString("pt-BR");
     }catch(e){
-      document.getElementById("status").textContent = "Erro ao carregar: "+e.message;
+      st.textContent = cache
+        ? "Sem conexão · mostrando dados de "+hhmm(cache.ts)
+        : "Erro ao carregar: "+e.message;
     }
   }
 
