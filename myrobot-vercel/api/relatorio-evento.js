@@ -45,6 +45,22 @@ export default async function handler(req, res) {
   const api = `https://${SUBDOMAIN}.kommo.com/api/v4`;
 
   try {
+    const dorme = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    // O Kommo limita a ~7 requisições por segundo. Se estourar, ele responde
+    // 429 e a requisição volta vazia — foi o que zerou os leads. Aqui tentamos
+    // de novo com pausa crescente antes de desistir.
+    async function buscaComRetry(url, tentativas = 4) {
+      let espera = 400;
+      for (let i = 0; i < tentativas; i++) {
+        const r = await fetch(url, { headers: auth });
+        if (r.ok || r.status === 204) return r;
+        if (r.status === 429 || r.status >= 500) { await dorme(espera); espera *= 2; continue; }
+        return r; // 4xx de verdade: não adianta insistir
+      }
+      return null;
+    }
+
     // 1) Busca os leads do FUNIL (paginando) e filtra pela tag do evento aqui.
     //    Atenção: filter[tags][0] do Kommo espera o ID numérico da tag, não o
     //    nome — passar o nome devolvia lista vazia sempre. Por isso o filtro
@@ -54,14 +70,25 @@ export default async function handler(req, res) {
     for (;;) {
       const url = `${api}/leads?filter[pipeline_id]=${PIPELINE_ID}`
         + `&with=contacts&limit=250&page=${page}`;
-      const r = await fetch(url, { headers: auth });
-      if (!r.ok) break;
+      const r = await buscaComRetry(url);
+      if (!r || !r.ok) {
+        // Falhar aqui e seguir devolvia ok:true com lista vazia — a tela
+        // "zerava". Melhor devolver erro pro app manter os dados em cache.
+        if (page === 1) {
+          return res.status(502).json({
+            ok: false,
+            error: "Kommo não respondeu ao listar os leads (possível limite de requisições). Tente atualizar de novo.",
+          });
+        }
+        break; // já temos as páginas anteriores
+      }
       const data = await r.json().catch(() => ({}));
       const batch = data?._embedded?.leads || [];
       leads = leads.concat(batch);
       if (batch.length < 250) break;
       page++;
       if (page > 20) break; // trava de segurança
+      await dorme(120);
     }
 
     const totalFunil = leads.length;
@@ -164,6 +191,7 @@ export default async function handler(req, res) {
     async function emLotes(itens, tamanho, fn) {
       for (let i = 0; i < itens.length; i += tamanho) {
         await Promise.all(itens.slice(i, i + tamanho).map(fn));
+        if (i + tamanho < itens.length) await dorme(180); // fica abaixo de ~7 req/s
       }
     }
 
@@ -172,18 +200,18 @@ export default async function handler(req, res) {
 
     const idsContato = [...new Set(leadsProc.map((l) => contatoDe(l)?.id).filter(Boolean))];
     const contatos = {};
-    await emLotes(idsContato, 12, async (id) => {
+    await emLotes(idsContato, 4, async (id) => {
       try {
-        const r = await fetch(`${api}/contacts/${id}`, { headers: auth });
-        contatos[id] = r.ok ? await r.json().catch(() => null) : null;
+        const r = await buscaComRetry(`${api}/contacts/${id}`);
+        contatos[id] = (r && r.ok) ? await r.json().catch(() => null) : null;
       } catch (e) { contatos[id] = null; }
     });
 
     const notas = {};
-    await emLotes(leadsProc.map((l) => l.id), 12, async (id) => {
+    await emLotes(leadsProc.map((l) => l.id), 4, async (id) => {
       try {
-        const r = await fetch(`${api}/leads/${id}/notes?limit=50`, { headers: auth });
-        const d = r.ok ? await r.json().catch(() => ({})) : {};
+        const r = await buscaComRetry(`${api}/leads/${id}/notes?limit=50`);
+        const d = (r && r.ok) ? await r.json().catch(() => ({})) : {};
         notas[id] = d?._embedded?.notes || [];
       } catch (e) { notas[id] = []; }
     });
