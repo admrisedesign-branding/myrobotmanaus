@@ -138,6 +138,7 @@ export default async function handler(req, res) {
 
     // 2) Agrega + monta a lista detalhada por lead
     const porHora = {};
+    const porDia = {};
     const categorias = { Quente: 0, Morno: 0, Outro: 0 };
     const porBairro = {};
     const porConsultor = {};
@@ -165,6 +166,14 @@ export default async function handler(req, res) {
       const hk = String(hh).padStart(2, "0");
       porHora[hk] = (porHora[hk] || 0) + 1;
       const horaLabel = `${hk}:${String(mm).padStart(2, "0")}`;
+
+      // dia da captação (evento de vários dias) — vem do created_at do Kommo,
+      // então leads antigos já ficam datados corretamente, sem retrabalho
+      const dd = String(d.getUTCDate()).padStart(2, "0");
+      const mo = String(d.getUTCMonth() + 1).padStart(2, "0");
+      const diaLabel = `${dd}/${mo}`;
+      const diaISO = `${d.getUTCFullYear()}-${mo}-${dd}`;
+      porDia[diaISO] = (porDia[diaISO] || 0) + 1;
 
       // categoria
       const catEnum = getCFEnum(l, FIELD.categoria);
@@ -233,6 +242,8 @@ export default async function handler(req, res) {
       lista.push({
         id: l.id,
         hora: horaLabel,
+        dia: diaLabel,
+        diaISO,
         responsavel,
         filho: filhoFinal,
         telefone,
@@ -255,6 +266,7 @@ export default async function handler(req, res) {
       evento: eventoTag,
       total: leads.length,
       porHora,
+      porDia,
       categorias,
       porConsultor,
       porBairro,
