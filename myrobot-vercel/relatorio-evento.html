@@ -286,7 +286,7 @@
     const mapa = {};
     lista.forEach(function(l){ if(l.diaISO) mapa[l.diaISO] = l.dia; });
     const isos = Object.keys(mapa).sort();
-    if(isos.length < 2){ box.innerHTML = ""; diaAtivo = ""; return; }
+    if(isos.length < 1){ box.innerHTML = ""; diaAtivo = ""; return; }   // sem leads ainda
     let html = '<button data-dia="" class="'+(diaAtivo?"":"on")+'">Todos ('+lista.length+')</button>';
     isos.forEach(function(iso){
       const n = lista.filter(function(l){ return l.diaISO === iso; }).length;

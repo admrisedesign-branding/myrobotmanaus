@@ -230,7 +230,7 @@
     todos.forEach(function(l){ if(l.diaISO) mapa[l.diaISO] = l.dia; });
     var isos = Object.keys(mapa).sort();
     // um dia só? não precisa de filtro
-    if (isos.length < 2){ box.innerHTML = ""; diaAtivo = ""; return; }
+    if (isos.length < 1){ box.innerHTML = ""; diaAtivo = ""; return; }   // sem leads ainda
     var html = '<button data-dia="" class="'+(diaAtivo?"":"on")+'">Todos ('+todos.length+')</button>';
     isos.forEach(function(iso){
       var n = todos.filter(function(l){ return l.diaISO === iso; }).length;
