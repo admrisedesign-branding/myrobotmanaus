@@ -83,6 +83,8 @@
     padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
   .dias button:hover{border-color:#FF4D00;}
   .dias button.on{background:#FF4D00;border-color:#FF4D00;color:#fff;}
+  .localdia{font-size:13px;color:#FF4D00;font-weight:700;margin:-6px 0 10px;}
+  .localdia:empty{display:none;}
   .aviso{font-size:12.5px;color:var(--cinza);margin:-6px 0 12px;}
   .aviso:empty{display:none;}
   .dias button.vazio{color:#9891a8;border-style:dashed;}
@@ -162,6 +164,7 @@
         <button id="btnRefresh">↻ Atualizar</button>
       </div>
       <div class="dias" id="dias"></div>
+      <div class="localdia" id="localDia"></div>
       <div class="aviso" id="aviso"></div>
       <div class="lista" id="lista">
         <div class="loading">Carregando leads…</div>
@@ -257,9 +260,19 @@
     var p = qsDias();
     if (p.length) return p;
     try { var s = JSON.parse(localStorage.getItem("mr_evento")||"{}"); if (s.dias && s.dias.length) return s.dias; } catch(e){}
-    return ["2026-08-19","2026-08-20","2026-08-21"];
+    return ["2026-08-19","2026-08-20","2026-08-21","2026-08-22"];
   })();
   function rotuloDia(iso){ var p = iso.split("-"); return p[2]+"/"+p[1]; }
+  // o evento muda de shopping entre os dias — mostra o local do dia escolhido
+  function localDoDia(lista, iso){
+    var c = {};
+    lista.forEach(function(l){ if(l.diaISO===iso && l.local) c[l.local]=(c[l.local]||0)+1; });
+    var ks = Object.keys(c);
+    if(!ks.length) return "";
+    ks.sort(function(a,b){ return c[b]-c[a]; });
+    return ks[0];
+  }
+
 
   function montaDias(){
     var box = document.getElementById("dias");
@@ -278,6 +291,9 @@
     box.querySelectorAll("button").forEach(function(b){
       b.onclick = function(){ diaAtivo = b.getAttribute("data-dia"); montaDias(); aplicaBusca(); };
     });
+    var loc = diaAtivo ? localDoDia(todos, diaAtivo) : "";
+    var el = document.getElementById("localDia");
+    if(el) el.textContent = loc ? "📍 " + loc : "";
   }
 
   function aplicaBusca(){

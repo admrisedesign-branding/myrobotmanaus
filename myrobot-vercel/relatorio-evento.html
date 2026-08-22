@@ -100,6 +100,8 @@
     padding:8px 15px;font-size:13.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:.12s;}
   .dias button:hover{border-color:#FF4D00;}
   .dias button.on{background:#FF4D00;border-color:#FF4D00;color:#fff;}
+  .localdia{font-size:13px;color:#FF4D00;font-weight:700;margin:-8px 0 14px;}
+  .localdia:empty{display:none;}
   .dias button.vazio{color:#9891a8;border-style:dashed;}
   .dias button.vazio.on{color:#fff;border-style:solid;}
   .refresh{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;}
@@ -180,6 +182,7 @@
     </div>
 
     <div class="dias" id="dias"></div>
+    <div class="localdia" id="localDia"></div>
 
     <div class="kpis">
       <div class="kpi"><div class="big" id="kTotal">—</div><div class="lbl">Leads captados</div></div>
@@ -305,9 +308,19 @@
     var p = qsDias();
     if (p.length) return p;
     try { var s = JSON.parse(localStorage.getItem("mr_evento")||"{}"); if (s.dias && s.dias.length) return s.dias; } catch(e){}
-    return ["2026-08-19","2026-08-20","2026-08-21"];
+    return ["2026-08-19","2026-08-20","2026-08-21","2026-08-22"];
   })();
   function rotuloDia(iso){ var p = iso.split("-"); return p[2]+"/"+p[1]; }
+  // o evento muda de shopping entre os dias — mostra o local do dia escolhido
+  function localDoDia(lista, iso){
+    var c = {};
+    lista.forEach(function(l){ if(l.diaISO===iso && l.local) c[l.local]=(c[l.local]||0)+1; });
+    var ks = Object.keys(c);
+    if(!ks.length) return "";
+    ks.sort(function(a,b){ return c[b]-c[a]; });
+    return ks[0];
+  }
+
 
   function montaDias(){
     const box = document.getElementById("dias");
@@ -331,6 +344,9 @@
         aplicaDia();
       };
     });
+    const loc = diaAtivo ? localDoDia(lista, diaAtivo) : "";
+    const el = document.getElementById("localDia");
+    if(el) el.textContent = loc ? "📍 " + loc : "";
   }
 
   function aplicaDia(){
