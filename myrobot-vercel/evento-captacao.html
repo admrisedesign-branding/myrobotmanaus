@@ -216,13 +216,26 @@
   var _sv = {};
   try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
   var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
-  var LOCAL  = qs.get("local")  || _sv.local  || "Manaus Plaza Shopping - Centro de Convenções";
   // Evento de vários dias: a data é sempre a de HOJE (Manaus, UTC-4).
   // Antes vinha fixa do link/localStorage e travava no primeiro dia.
   var _ag = new Date(Date.now() - 4*3600*1000);
-  var HOJE = String(_ag.getUTCDate()).padStart(2,"0") + "/" +
-             String(_ag.getUTCMonth()+1).padStart(2,"0") + "/" + _ag.getUTCFullYear();
+  var _aa = _ag.getUTCFullYear();
+  var _mm = String(_ag.getUTCMonth()+1).padStart(2,"0");
+  var _dd = String(_ag.getUTCDate()).padStart(2,"0");
+  var HOJE_ISO = _aa + "-" + _mm + "-" + _dd;
+  var HOJE = _dd + "/" + _mm + "/" + _aa;
   var DATA = HOJE;
+
+  // O evento troca de shopping entre os dias. Com o app já instalado nos
+  // tablets, ninguém precisa reabrir link nenhum: o local sai da data.
+  var LOCAIS_POR_DIA = {
+    "2026-08-19": "Manaus Plaza Shopping",
+    "2026-08-20": "Manaus Plaza Shopping",
+    "2026-08-21": "Manaus Plaza Shopping",
+    "2026-08-22": "Shopping Ponta Negra"
+  };
+  var LOCAL = qs.get("local") || LOCAIS_POR_DIA[HOJE_ISO] || _sv.local
+              || "Manaus Plaza Shopping";
   var KEY = qs.get("key") || _sv.key || "myrobot2026";
   var VOUCHER = qs.get("voucher") || _sv.voucher || "150";
   if (qs.get("evento")) {
@@ -234,8 +247,12 @@
   // vários dias — no header mostramos só o nome, sem a data
   function nomeCurto(ev){
     return String(ev||"")
+      // tira a data: "... (19/08)" ou "... - 19/08"
       .replace(/\s*\(\s*\d{1,2}\/\d{1,2}(\/\d{2,4})?\s*\)\s*$/, "")
       .replace(/\s*[-\u2013\u2014]\s*\d{1,2}\/\d{1,2}(\/\d{2,4})?\s*$/, "")
+      // tira o local do fim ("Robô Humanoide - Plaza" -> "Robô Humanoide"):
+      // o evento roda em mais de um shopping, e o local já aparece por dia
+      .replace(/\s*[-\u2013\u2014]\s*[^-\u2013\u2014]+$/, "")
       .trim();
   }
   var _mh=document.getElementById("mheadEv"); if(_mh) _mh.textContent = nomeCurto(EVENTO);
