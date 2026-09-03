@@ -39,6 +39,36 @@ const CLOSED_STATUSES = [142, 143]; // ganho / perdido
 // ─── helpers ─────────────────────────────────────────────────────────────────
 function digits(s) { return String(s || "").replace(/\D/g, ""); }
 
+// ─── telefone: variante do 9º dígito (Manaus) ───────────────────────────────
+// O WhatsApp entrega números antigos de Manaus SEM o 9 (55 92 8245-1514, 12 dígitos);
+// o formulário do site grava COM o 9 (55 92 9 8245-1514, 13 dígitos). Pra casar os
+// dois, comparamos pela "chave": DDD + últimos 8 dígitos.
+function phoneKey(d) {
+  d = digits(d);
+  if (d.startsWith("55") && d.length >= 12) d = d.slice(2);
+  if (d.length < 10) return d;
+  return d.slice(0, 2) + d.slice(-8); // DDD + 8 finais
+}
+function phoneVariants(d) {
+  d = digits(d);
+  const nat = d.startsWith("55") && d.length >= 12 ? d.slice(2) : d;
+  const ddd = nat.slice(0, 2), rest = nat.slice(2);
+  const out = new Set();
+  if (rest.length === 8) { out.add(ddd + rest); out.add(ddd + "9" + rest); }
+  else if (rest.length === 9 && rest[0] === "9") { out.add(ddd + rest); out.add(ddd + rest.slice(1)); }
+  else out.add(nat);
+  return [...out];
+}
+function contactMatchesPhone(contact, phoneDig) {
+  const key = phoneKey(phoneDig);
+  const cfs = contact.custom_fields_values || [];
+  for (const f of cfs) {
+    if (!(f.field_code === "PHONE" || /phone|telefone/i.test(f.field_name || ""))) continue;
+    for (const v of f.values || []) if (phoneKey(v.value) === key) return true;
+  }
+  return false;
+}
+
 async function kommo(token, path, opts = {}) {
   const r = await fetch(API + path, {
     ...opts,
@@ -92,12 +122,23 @@ async function getContactPhone(token, contactId) {
 // que NÃO seja o próprio lead atual. Retorna o lead completo (com campos e tags).
 async function findSiteLead(token, phoneDig, currentLeadId) {
   if (!phoneDig) return null;
-  const { ok, data } = await kommo(
-    token,
-    `/contacts?query=${encodeURIComponent(phoneDig)}&with=leads&limit=10`
-  );
-  const contacts = data?._embedded?.contacts || [];
-  if (!ok || !contacts.length) return null;
+  // busca pelas duas grafias (com e sem o 9) e junta os contatos encontrados
+  const found = new Map();
+  for (const q of phoneVariants(phoneDig)) {
+    const { ok, data } = await kommo(
+      token,
+      `/contacts?query=${encodeURIComponent(q)}&with=leads&limit=20`
+    );
+    for (const c of (ok && data?._embedded?.contacts) || []) found.set(c.id, c);
+  }
+  // fallback: só os 8 finais (pega grafias com espaço/hífen que o query não casou)
+  if (!found.size) {
+    const tail = digits(phoneDig).slice(-8);
+    const { ok, data } = await kommo(token, `/contacts?query=${tail}&with=leads&limit=50`);
+    for (const c of (ok && data?._embedded?.contacts) || []) found.set(c.id, c);
+  }
+  const contacts = [...found.values()].filter((c) => contactMatchesPhone(c, phoneDig));
+  if (!contacts.length) return null;
 
   const leadIds = [];
   for (const c of contacts) {
