@@ -2077,6 +2077,47 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
     gtag('config', 'G-JLVV4P516H');
   </script>
   <!-- Fim Google Analytics -->
+
+<!-- MR_UTM: captura origem (utm/fbclid/gclid/referrer) no 1º acesso e ajusta o texto do WhatsApp -->
+<script>
+(function(){try{
+  var KEYS=['utm_source','utm_medium','utm_campaign','utm_content','utm_term','fbclid','gclid'];
+  var p=new URLSearchParams(location.search), u={}, has=false;
+  KEYS.forEach(function(k){var v=p.get(k); if(v){u[k]=v; has=true;}});
+  if(!has){
+    var ref=document.referrer||'';
+    if(ref && ref.indexOf(location.hostname)===-1){
+      var h=''; try{h=new URL(ref).hostname;}catch(e){}
+      u.utm_source=/google\./.test(h)?'google':/instagram/.test(h)?'instagram':/facebook|fb\.com|l\.facebook/.test(h)?'facebook':h;
+      u.utm_medium=/google\./.test(h)?'organic':'referral';
+      has=!!h;
+    }
+  }
+  if(has && !localStorage.getItem('mr_utm')){
+    u.referrer=document.referrer||''; u.landing=location.pathname+location.search; u.ts=new Date().toISOString();
+    localStorage.setItem('mr_utm', JSON.stringify(u));
+  }
+  var utm={}; try{utm=JSON.parse(localStorage.getItem('mr_utm')||'{}');}catch(e){}
+  window.MR_UTM=utm;
+  window.MR_IS_AD=/cpc|paid|ads|ppc/i.test(utm.utm_medium||'') || !!utm.fbclid || !!utm.gclid;
+  window.MR_WA_TEXT=function(kind){
+    if(window.MR_IS_AD) return kind==='duvida'
+      ? 'Ol\u00e1! Vi o an\u00fancio e tenho uma d\u00favida sobre a My Robot Manaus.'
+      : 'Ol\u00e1! Vi o an\u00fancio da My Robot Manaus e gostaria de saber mais.';
+    return kind==='duvida'
+      ? 'Ol\u00e1! Tenho uma d\u00favida sobre a My Robot Manaus.'
+      : 'Ol\u00e1! Estou no site da My Robot Manaus e gostaria de saber mais.';
+  };
+  document.addEventListener('DOMContentLoaded',function(){
+    if(!window.MR_IS_AD) return;
+    document.querySelectorAll('a[href*="wa.me/5592994163709"]').forEach(function(a){
+      var href=a.getAttribute('href')||'';
+      if(/Tenho%20uma%20d/.test(href)) a.setAttribute('href','https://wa.me/5592994163709?text='+encodeURIComponent(window.MR_WA_TEXT('duvida')));
+      else if(/Estou%20no%20site/.test(href)) a.setAttribute('href','https://wa.me/5592994163709?text='+encodeURIComponent(window.MR_WA_TEXT('site')));
+    });
+  });
+}catch(e){}})();
+</script>
 </head>
 <body>
 
@@ -3105,7 +3146,7 @@ function handleForm(e) {
   btn.textContent = '✅ Enviado! Falaremos com você em breve.';
   btn.style.background = '#16A34A';
   btn.disabled = true;
-  setTimeout(() => window.open('https://wa.me/5592994163709?text=Ol%C3%A1%21%20Estou%20no%20site%20da%20My%20Robot%20Manaus%20e%20gostaria%20de%20saber%20mais.','_blank'), 1200);
+  setTimeout(() => window.open('https://wa.me/5592994163709?text='+encodeURIComponent((window.MR_WA_TEXT||function(){return 'Olá! Estou no site da My Robot Manaus e gostaria de saber mais.';})('site')),'_blank'), 1200);
 }
 
 // REVEAL
@@ -3239,7 +3280,8 @@ function submitForm() {
       bairro,
       orig,
       score,
-      categoria: lead.l
+      categoria: lead.l,
+      utm: window.MR_UTM||{}
     })
   }).catch(e => console.warn('Kommo falhou, lead seguiu pelo WhatsApp:', e));
   localStorage.setItem('myrobot_lead_'+Date.now(), JSON.stringify({timestamp:new Date().toISOString(),rn,wn,em,fn,fi,area,obj,mom,cont,bairro,orig,score,leadLabel:lead.l}));
