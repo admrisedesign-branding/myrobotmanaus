@@ -103,8 +103,9 @@ function mergeTags(existing, toAdd) {
 }
 
 async function getLead(token, id) {
-  const { ok, data } = await kommo(token, `/leads/${id}?with=contacts`);
-  return ok ? data : null;
+  const { ok, status, data } = await kommo(token, `/leads/${id}?with=contacts`);
+  if (!ok) throw new Error(`Kommo GET /leads/${id} -> HTTP ${status} ${JSON.stringify(data).slice(0, 200)}`);
+  return data;
 }
 
 async function getContactPhone(token, contactId) {
@@ -190,7 +191,7 @@ export default async function handler(req, res) {
     // 1) telefone do lead atual (o do WhatsApp)
     const lead = await getLead(token, currentId);
     const contactId = lead?._embedded?.contacts?.[0]?.id;
-    if (!contactId) return res.status(200).json({ ok: true, duplicate: false, reason: "sem contato" });
+    if (!contactId) return res.status(200).json({ ok: true, duplicate: false, reason: "sem contato", lead_id: currentId });
 
     const phoneDig = await getContactPhone(token, contactId);
     if (!phoneDig) return res.status(200).json({ ok: true, duplicate: false, reason: "sem telefone" });
