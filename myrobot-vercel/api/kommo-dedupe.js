@@ -227,7 +227,18 @@ export default async function handler(req, res) {
     let how = "telefone";
     let siteLead = phoneDig ? await findSiteLead(token, phoneDig, currentId) : null;
     if (!siteLead) { siteLead = await findSiteLeadByName(token, waName, lead); how = "nome"; }
-    if (!siteLead) return res.status(200).json({ ok: true, duplicate: false, phone: phoneDig, name: waName });
+    if (!siteLead) {
+      // Não veio do formulário → marca a origem já no início ("whatsapp-bot"),
+      // mesmo que a pessoa abandone as perguntas do bot no meio.
+      const tagsNow = lead?._embedded?.tags || [];
+      if (!tagsNow.some((t) => t.name === BOT_TAG)) {
+        await kommo(token, `/leads/${currentId}`, {
+          method: "PATCH",
+          body: JSON.stringify({ _embedded: { tags: mergeTags(tagsNow, [BOT_TAG]) } }),
+        });
+      }
+      return res.status(200).json({ ok: true, duplicate: false, tagged: BOT_TAG, phone: phoneDig, name: waName });
+    }
 
     // 3) É DUPLICADO → sobrevive o lead do WhatsApp (este), fecha o do site.
     const meTags = lead?._embedded?.tags || [];
