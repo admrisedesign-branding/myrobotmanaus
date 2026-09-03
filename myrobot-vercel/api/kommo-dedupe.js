@@ -108,15 +108,43 @@ async function getLead(token, id) {
   return data;
 }
 
-async function getContactPhone(token, contactId) {
+async function getContactInfo(token, contactId) {
   const { ok, data } = await kommo(token, `/contacts/${contactId}`);
-  if (!ok) return "";
+  if (!ok) return { phone: "", name: "" };
   const cfs = data.custom_fields_values || [];
   const phoneField = cfs.find(
     (f) => f.field_code === "PHONE" || /phone|telefone/i.test(f.field_name || "")
   );
   const val = phoneField?.values?.[0]?.value || "";
-  return digits(val);
+  return { phone: digits(val), name: String(data.name || "") };
+}
+
+// normaliza nome pra comparar ("Angélica Regina" ~ "Angélica Regina Oliveira de Souza")
+function normName(s) {
+  return String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
+}
+
+// FALLBACK por NOME: lead aberto com tag "site", criado até 48h antes/depois deste,
+// cujo contato principal tem nome que começa com o nome do WhatsApp (ou vice-versa).
+async function findSiteLeadByName(token, waName, currentLead) {
+  const me = normName(waName);
+  if (me.length < 6) return null;
+  const q = me.split(" ").slice(0, 2).join(" ");
+  const { ok, data } = await kommo(token, `/leads?query=${encodeURIComponent(q)}&with=contacts&limit=50`);
+  if (!ok) return null;
+  const leads = (data?._embedded?.leads || [])
+    .filter((l) => l.id !== currentLead.id)
+    .filter((l) => !CLOSED_STATUSES.includes(l.status_id))
+    .filter((l) => (l._embedded?.tags || []).some((t) => t.name === SITE_TAG))
+    .filter((l) => Math.abs((l.created_at || 0) - (currentLead.created_at || 0)) <= 48 * 3600);
+  for (const l of leads) {
+    const cid = l._embedded?.contacts?.[0]?.id;
+    if (!cid) continue;
+    const { name } = await getContactInfo(token, cid);
+    const n = normName(name);
+    if (n && (n.startsWith(me) || me.startsWith(n))) return l;
+  }
+  return null;
 }
 
 // procura, entre todos os contatos com esse telefone, um lead ABERTO com a tag "site"
@@ -193,12 +221,13 @@ export default async function handler(req, res) {
     const contactId = lead?._embedded?.contacts?.[0]?.id;
     if (!contactId) return res.status(200).json({ ok: true, duplicate: false, reason: "sem contato", lead_id: currentId });
 
-    const phoneDig = await getContactPhone(token, contactId);
-    if (!phoneDig) return res.status(200).json({ ok: true, duplicate: false, reason: "sem telefone" });
+    const { phone: phoneDig, name: waName } = await getContactInfo(token, contactId);
 
-    // 2) já existe lead do site com esse telefone?
-    const siteLead = await findSiteLead(token, phoneDig, currentId);
-    if (!siteLead) return res.status(200).json({ ok: true, duplicate: false });
+    // 2) já existe lead do site com esse telefone? Se não, tenta pelo nome.
+    let how = "telefone";
+    let siteLead = phoneDig ? await findSiteLead(token, phoneDig, currentId) : null;
+    if (!siteLead) { siteLead = await findSiteLeadByName(token, waName, lead); how = "nome"; }
+    if (!siteLead) return res.status(200).json({ ok: true, duplicate: false, phone: phoneDig, name: waName });
 
     // 3) É DUPLICADO → sobrevive o lead do WhatsApp (este), fecha o do site.
     const meTags = lead?._embedded?.tags || [];
@@ -226,7 +255,7 @@ export default async function handler(req, res) {
       }),
     });
 
-    return res.status(200).json({ ok: true, duplicate: true, survivor: currentId, closed: siteLead.id });
+    return res.status(200).json({ ok: true, duplicate: true, how, survivor: currentId, closed: siteLead.id, site_name: siteLead.name });
   } catch (err) {
     console.error("dedupe erro:", err);
     return res.status(200).json({ ok: false, error: String(err) });
