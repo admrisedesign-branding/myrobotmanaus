@@ -25,6 +25,31 @@ const FIELD = {
 };
 const CATEGORIA_ENUM = { Quente: 4299211, Morno: 4299213, Frio: 4299215 };
 
+// Campos de origem (utm) já existentes na Kommo — preenchidos a partir de window.MR_UTM do site.
+const UTM_FIELD = {
+  utm_source:   486029,
+  utm_medium:   486025,
+  utm_campaign: 486027,
+  utm_content:  486023,
+  utm_term:     486031,
+  referrer:     486033, // "utm_referrer"
+  gclid:        486039,
+  fbclid:       486041,
+};
+const AD_TAG = "anúncio";
+
+// Monta os campos utm e decide se o lead veio de tráfego pago.
+function utmFields(utm) {
+  const out = [];
+  if (!utm || typeof utm !== "object") return { fields: out, isAd: false };
+  for (const k of Object.keys(UTM_FIELD)) {
+    const f = txt(UTM_FIELD[k], utm[k]);
+    if (f) out.push(f);
+  }
+  const isAd = /cpc|paid|ads|ppc/i.test(utm.utm_medium || "") || !!utm.fbclid || !!utm.gclid;
+  return { fields: out, isAd };
+}
+
 // Status "fechados" padrão da Kommo (não reabrir esses): 142 = ganho, 143 = perdido.
 const CLOSED_STATUSES = [142, 143];
 
@@ -128,7 +153,13 @@ export default async function handler(req, res) {
         String(b.categoria || "").toLowerCase().includes(k.toLowerCase())
       ) || "Frio";
 
+    const { fields: utmF, isAd } = utmFields(b.utm);
+    const origTxt = String(b.orig || "");
+    const veioDeAnuncio = isAd || /an[uú]ncio/i.test(origTxt);
+    const baseTags = ["site", cat, ...(veioDeAnuncio ? [AD_TAG] : [])];
+
     const leadFields = [
+      ...utmF,
       txt(FIELD.score, score),
       categoriaField(b.categoria),
       txt(FIELD.area, b.area),
@@ -160,7 +191,7 @@ export default async function handler(req, res) {
         const fieldsToFill = leadFields.filter((f) => !filledIds.has(f.field_id));
 
         // tags acumulam na ordem: o que já existe + "site" + categoria
-        const tags = mergeTags(existingTags, ["site", cat]);
+        const tags = mergeTags(existingTags, baseTags);
 
         const patch = { _embedded: { tags } };
         if (fieldsToFill.length) patch.custom_fields_values = fieldsToFill;
@@ -187,7 +218,7 @@ export default async function handler(req, res) {
             custom_fields_values: leadFields,
             _embedded: {
               contacts: [{ id: contact.id }],
-              tags: [{ name: "site" }, { name: cat }],
+              tags: baseTags.map((name) => ({ name })),
             },
           },
         ]),
@@ -214,7 +245,7 @@ export default async function handler(req, res) {
           custom_fields_values: leadFields,
           _embedded: {
             contacts: [{ name: b.rn || b.fn || "Lead do site", custom_fields_values: contactFields }],
-            tags: [{ name: "site" }, { name: cat }],
+            tags: baseTags.map((name) => ({ name })),
           },
         },
       ]),
