@@ -224,9 +224,55 @@ export default async function handler(req, res) {
       notaOk = nr.ok;
     }
 
-    return res.status(200).json({ ok: true, feito: { lead: !!leadId, nota: notaOk }, lead_id: leadId });
+    // ---- grava também no Capta (não bloqueia o cadastro se falhar) ----
+    let capta = null;
+    try { capta = await gravarNoCapta(body, leadId); } catch (e) { console.error("Capta:", e.message); }
+
+    return res.status(200).json({ ok: true, feito: { lead: !!leadId, nota: notaOk, capta: !!(capta && capta.ok) }, lead_id: leadId });
   } catch (err) {
     console.error("Falha geral:", err);
     return res.status(500).json({ error: String(err) });
   }
+}
+
+// ---------------------------------------------------------------------
+// Gravação dupla no Capta: o lead de evento entra no funil da escola já
+// ligado ao evento certo, sem depender do espelho do Kommo.
+// Variáveis: CAPTA_URL (opcional) · CAPTA_SLUG · CAPTA_TOKEN · CAPTA_EVENTO (opcional)
+// ---------------------------------------------------------------------
+async function gravarNoCapta(dados, kommoLeadId) {
+  const base  = process.env.CAPTA_URL  || "https://capta.riseagencia.com";
+  const slug  = process.env.CAPTA_SLUG || "my-robot-manaus";
+  const token = process.env.CAPTA_TOKEN;
+  if (!token) return null;                       // não configurado: segue a vida
+
+  const filhos = Array.isArray(dados.filhos) ? dados.filhos : [];
+  const primeiro = filhos[0] || {};
+  const corpo = {
+    slug, token,
+    nome: (dados.rn || "").trim() || primeiro.nome || "Lead de evento",
+    contato: String(dados.wn || "").replace(/\D/g, ""),
+    origem: "evento",
+    extra: {
+      fonte: "evento", porta: "evento",
+      crianca: primeiro.nome || null,
+      idade: primeiro.idade ? Number(primeiro.idade) : null,
+      atendente: dados.consultor || null,
+      evento_nome: dados.evento || null,
+      evento_local: dados.local || null,
+      evento_data: dados.data || null,
+      evento_id: process.env.CAPTA_EVENTO || null,
+      kommo_lead_id: kommoLeadId || null,
+      notas: [
+        dados.bairro ? `Bairro: ${dados.bairro}` : null,
+        filhos.length > 1 ? `Irmãos: ${filhos.map(f => `${f.nome}${f.idade ? " (" + f.idade + ")" : ""}`).join(", ")}` : null,
+        dados.evento ? `Captado em ${dados.evento}${dados.local ? " · " + dados.local : ""}` : null,
+      ].filter(Boolean).join(" · ") || null,
+    },
+  };
+  const r = await fetch(`${base}/api/capta-ingest`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
+  });
+  const j = await r.json().catch(() => ({}));
+  return r.ok ? { ok: true, ...j } : { ok: false, erro: j.error || r.status };
 }
