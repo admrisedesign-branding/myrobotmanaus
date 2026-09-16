@@ -5,6 +5,10 @@
       "destination": "/feedback.html"
     },
     {
+      "source": "/privacidade",
+      "destination": "/privacidade.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
