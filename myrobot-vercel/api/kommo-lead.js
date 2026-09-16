@@ -276,10 +276,12 @@ function registrarConsentimento(b) {
   if (!token) return;
   const corpo = {
     slug, token,
+    somente_consentimento: true,          // só o aceite; o lead chega pelo espelho do Kommo
     nome: String(b.rn || "").trim(),
     contato: String(b.wn || "").replace(/\D/g, ""),
-    canal: "site",
+    origem: "site",
     consentimento: {
+      canal: "site",
       contato: true,
       dados_crianca: !!c.dados_crianca,
       marketing: !!c.marketing,
@@ -290,7 +292,7 @@ function registrarConsentimento(b) {
     },
   };
   // não usa await de propósito: o lead não pode esperar o Capta
-  fetch(`${base}/api/capta-consent`, {
+  fetch(`${base}/api/capta-ingest`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
   }).catch((e) => console.warn("Capta consent falhou:", e && e.message));
 }
