@@ -126,6 +126,12 @@
   @keyframes splash-in{from{opacity:0;transform:scale(.82);}to{opacity:1;transform:scale(1);}}
   @keyframes splash-pt{0%,100%{opacity:.35;transform:translateY(0);}50%{opacity:1;transform:translateY(-5px);}}
   @media(prefers-reduced-motion:reduce){#splash img,#splash .pts i{animation:none;}}
+
+  /* LGPD */
+  .lgpd-box{margin-top:14px;padding:12px 14px;border:1px solid rgba(255,255,255,.15);border-radius:12px;background:rgba(255,255,255,.04)}
+  .lgpd-txt{margin:0 0 8px;font-size:13px;line-height:1.45;opacity:.85}
+  .lgpd-ck{display:flex;gap:10px;align-items:center;font-size:14px;cursor:pointer}
+  .lgpd-ck input{width:20px;height:20px;flex:none}
 </style>
 </head>
 <body>
@@ -181,7 +187,12 @@
       <label>Bairro</label>
       <input id="bairro" type="text" placeholder="Onde vocês moram" autocomplete="off">
 
+      <div class="lgpd-box">
+        <p class="lgpd-txt">Vou anotar seu nome, seu WhatsApp e o nome e a idade da criança para te mandar o voucher e marcar a aula experimental. Só a My Robot usa isso.</p>
+        <label class="lgpd-ck" for="consent"><input type="checkbox" id="consent"><span><strong>Sim, sou responsável e autorizo</strong></span></label>
+      </div>
       <div class="err" id="err">Preencha ao menos seu nome e seu WhatsApp.</div>
+      <div class="err" id="errConsent">O responsável precisa marcar a autorização para cadastrar.</div>
       <button class="send" id="enviar">Cadastrar e gerar voucher</button>
     </div>
     <div class="foot">My Robot Manaus · O futuro é aqui</div>
@@ -293,6 +304,8 @@
     var wn = $("wn").value.trim();
     if (!rn || digits(wn).length < 10) { $("err").style.display = "block"; return; }
     $("err").style.display = "none";
+    if (!$("consent").checked) { $("errConsent").style.display = "block"; return; }
+    $("errConsent").style.display = "none";
     var filhos = lerFilhos();
     var dados = {
       consultor: $("consultor").value.trim(),
@@ -300,7 +313,10 @@
       // compatibilidade: o primeiro filho continua indo nos campos antigos
       fn: (filhos[0] && filhos[0].nome) || "", fi: (filhos[0] && filhos[0].idade) || "",
       rn: rn, wn: wn, bairro: $("bairro").value.trim(),
-      evento: EVENTO, local: LOCAL, data: DATA
+      evento: EVENTO, local: LOCAL, data: DATA,
+      // LGPD: aceite tocado pelo responsável no app do captador
+      consentimento: { contato: true, dados_crianca: true, responsavel: true, versao: "evento-v1",
+        texto: document.querySelector(".lgpd-txt").textContent.trim() }
     };
     $("form-view").style.display = "none";
     $("sending").classList.add("show"); $("sending").style.display="block";
@@ -356,6 +372,7 @@
 
   $("prox").addEventListener("click", function(){
     ["rn","wn","bairro"].forEach(function(id){ $(id).value=""; });
+    $("consent").checked = false;   // LGPD: cada responsável aceita por si
     $("filhos").innerHTML = "";
     $("filhos").appendChild(linhaFilho(true));
     $("thanks").style.display = "none";

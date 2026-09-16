@@ -2032,6 +2032,14 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
   border-color: rgba(34,197,94,0.40) !important;
 }
 
+/* LGPD — checkboxes de consentimento (step 3) */
+#aula-exp .ck-lgpd{display:flex;gap:10px;align-items:flex-start;font-size:.8rem;line-height:1.45;color:rgba(255,255,255,.85);margin-top:10px;cursor:pointer}
+#aula-exp .ck-lgpd input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:#f97316}
+#aula-exp .ck-lgpd-opt{color:rgba(255,255,255,.6);font-size:.76rem}
+#aula-exp .ck-lgpd a{color:#f97316;font-weight:600;text-decoration:underline}
+#aula-exp #err-consentContato{display:none}
+#aula-exp #err-consentContato.show{display:block}
+
 /* Lock de privacidade abaixo do form */
 #aula-exp .ae-form-centered-inner > p:last-of-type {
   color: rgba(255,255,255,0.85) !important;
@@ -3019,6 +3027,17 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
                 </div>
               </div>
             </div>
+            <div class="fg-f" style="margin-top:6px">
+              <label class="ck-lgpd" for="consentContato">
+                <input type="checkbox" id="consentContato">
+                <span><strong>Sou responsável pela criança</strong> e autorizo a My Robot Manaus a guardar meu nome, meu WhatsApp e o nome e a idade do meu filho(a) para entrar em contato e agendar a aula experimental. Os dados ficam só com a escola e são apagados se não seguirmos com a matrícula. <a href="/privacidade" target="_blank" rel="noopener">Como cuidamos dos seus dados</a></span>
+              </label>
+              <span class="field-error-f" id="err-consentContato">Para continuar, marque a autorização de contato</span>
+              <label class="ck-lgpd ck-lgpd-opt" for="consentMkt">
+                <input type="checkbox" id="consentMkt">
+                <span>Quero receber novidades e promoções da My Robot no WhatsApp.</span>
+              </label>
+            </div>
             <div class="form-nav-f">
               <button class="btn-back-f" onclick="goStep(2)">← Voltar</button>
               <button class="btn-next-f" onclick="submitForm()">Confirmar pelo WhatsApp 💬</button>
@@ -3208,6 +3227,9 @@ function validateStep(step) {
     const rn=document.getElementById('respNome'), wn=document.getElementById('whatsapp');
     if(rn && !rn.value.trim()) { showFErr('respNome',rn); ok=false; } else hideFErr('respNome',rn);
     if(wn && wn.value.trim().length<8) { showFErr('whatsapp',wn); ok=false; } else hideFErr('whatsapp',wn);
+    const ck=document.getElementById('consentContato');
+    if(ck && !ck.checked) { const e=document.getElementById('err-consentContato'); if(e) e.classList.add('show'); ok=false; }
+    else { const e=document.getElementById('err-consentContato'); if(e) e.classList.remove('show'); }
   }
   return ok;
 }
@@ -3281,7 +3303,17 @@ function submitForm() {
       orig,
       score,
       categoria: lead.l,
-      utm: window.MR_UTM||{}
+      utm: window.MR_UTM||{},
+      // LGPD: o aceite vai junto; o kommo-lead repassa pro Capta (api/capta-consent)
+      consentimento: {
+        contato: true,
+        dados_crianca: true,
+        marketing: !!document.getElementById('consentMkt')?.checked,
+        responsavel: true,
+        versao: 'site-v1',
+        texto: (document.querySelector('label[for="consentContato"] span')?.textContent||'').trim().slice(0,600),
+        url: location.href
+      }
     })
   }).catch(e => console.warn('Kommo falhou, lead seguiu pelo WhatsApp:', e));
   localStorage.setItem('myrobot_lead_'+Date.now(), JSON.stringify({timestamp:new Date().toISOString(),rn,wn,em,fn,fi,area,obj,mom,cont,bairro,orig,score,leadLabel:lead.l}));
