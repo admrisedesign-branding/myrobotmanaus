@@ -146,6 +146,10 @@ export default async function handler(req, res) {
 
   try {
     const b = req.body || {};
+    // LGPD: registra o consentimento no Capta antes de tudo (fire-and-forget).
+    // O Capta liga o aceite ao lead pelo telefone (gatilho no banco), então não
+    // depende do id do Kommo nem do espelho ter rodado.
+    try { registrarConsentimento(b); } catch (e) { console.warn("Capta consent:", e && e.message); }
     const score = Number(b.score) || 0;
     const filho = [b.fn, b.fi ? b.fi + " anos" : ""].filter(Boolean).join(" — ");
     const cat =
@@ -259,4 +263,34 @@ export default async function handler(req, res) {
     console.error("Falha geral:", err);
     return res.status(500).json({ error: String(err) });
   }
+}
+
+// ─── LGPD: consentimento → Capta ─────────────────────────────────────────────
+// Variáveis (mesmas da captação de eventos): CAPTA_URL (opcional) · CAPTA_SLUG · CAPTA_TOKEN
+function registrarConsentimento(b) {
+  const c = b && b.consentimento;
+  if (!c || !c.contato) return;
+  const base  = process.env.CAPTA_URL  || "https://capta.riseagencia.com";
+  const slug  = process.env.CAPTA_SLUG || "my-robot-manaus";
+  const token = process.env.CAPTA_TOKEN;
+  if (!token) return;
+  const corpo = {
+    slug, token,
+    nome: String(b.rn || "").trim(),
+    contato: String(b.wn || "").replace(/\D/g, ""),
+    canal: "site",
+    consentimento: {
+      contato: true,
+      dados_crianca: !!c.dados_crianca,
+      marketing: !!c.marketing,
+      responsavel: !!c.responsavel,
+      versao: String(c.versao || "site-v1"),
+      texto: String(c.texto || "").slice(0, 1000),
+      url: c.url || null,
+    },
+  };
+  // não usa await de propósito: o lead não pode esperar o Capta
+  fetch(`${base}/api/capta-consent`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
+  }).catch((e) => console.warn("Capta consent falhou:", e && e.message));
 }

@@ -270,6 +270,19 @@ async function gravarNoCapta(dados, kommoLeadId) {
       ].filter(Boolean).join(" · ") || null,
     },
   };
+  // LGPD: o capta-ingest grava uma linha por finalidade em capta_consentimentos
+  if (dados.consentimento && dados.consentimento.contato) {
+    corpo.consentimento = {
+      contato: true,
+      dados_crianca: !!dados.consentimento.dados_crianca,
+      marketing: !!dados.consentimento.marketing,
+      responsavel: !!dados.consentimento.responsavel,
+      versao: String(dados.consentimento.versao || "evento-v1"),
+      texto: String(dados.consentimento.texto || "").slice(0, 1000),
+      canal: "evento",
+      registrado_por: dados.consultor || null,
+    };
+  }
   const r = await fetch(`${base}/api/capta-ingest`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
   });
