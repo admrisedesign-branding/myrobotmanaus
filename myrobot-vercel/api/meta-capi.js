@@ -97,7 +97,9 @@ async function buildEvent(leadId, kind, ip, ua) {
     lead_id: String(leadId),
     utm_source: cf(lead, F.utm_source) || undefined,
     utm_campaign: cf(lead, F.utm_campaign) || undefined,
-    content_name: cf(lead, F.filho) || undefined,
+    // LGPD/ECA Digital: nada da criança vai pra Meta. O campo "Filho" (nome + idade)
+    // saía aqui em texto puro como content_name; agora vai só a categoria da trilha.
+    content_name: trilhaDe(cf(lead, F.filho)) || undefined,
   };
   if (ev.valueFrom === "price") custom_data.value = Number(lead.price || 0);
 
@@ -139,3 +141,11 @@ module.exports = async (req, res) => {
   }
   return res.status(200).json({ ok: results.every((r) => r.ok), sent: results.filter((r) => r.ok).length, results });
 };
+
+// "Lucas — 8 anos" → "Exploradores" (faixa etária, sem identificar a criança)
+function trilhaDe(filho) {
+  const m = String(filho || "").match(/(\d{1,2})\s*anos?/i);
+  if (!m) return undefined;
+  const i = Number(m[1]);
+  return i <= 10 ? "Exploradores" : i <= 15 ? "Construtores" : "Inovadores";
+}
