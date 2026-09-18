@@ -113,11 +113,69 @@ async function buildEvent(leadId, kind, ip, ua) {
   };
 }
 
+// Evento montado com dados que já vêm prontos, sem consultar a Kommo.
+// Existe porque em 18/set/2026 a Kommo bloqueou o IP da Vercel (403) e o
+// rastreio parou junto: este arquivo lia o lead lá para montar o evento.
+// Agora o Capta manda os dados direto. O event_id é o mesmo dos dois
+// caminhos, então a Meta reconhece e não conta a conversão duas vezes.
+function eventoDireto(kind, d, ip) {
+  const ev = EVENTS[kind];
+  const fone = digits(d.telefone);
+  const user_data = {
+    ...(ip && { client_ip_address: ip }),
+    ...(fone && { ph: [sha(fone.startsWith("55") ? fone : "55" + fone)] }),
+    ...(d.email && { em: [sha(String(d.email).trim().toLowerCase())] }),
+    ...(d.nome && { fn: [sha(normName(String(d.nome).split(" ")[0]))] }),
+  };
+  if (d.fbclid) user_data.fbc = `fb.1.${Date.now()}.${d.fbclid}`;
+  if (d.fbp) user_data.fbp = d.fbp;
+
+  const custom_data = {
+    currency: "BRL",
+    lead_id: String(d.lead_id || ""),
+    utm_source: d.utm_source || undefined,
+    utm_campaign: d.utm_campaign || undefined,
+    // nada da criança vai para a Meta — só a trilha do curso
+    content_name: d.trilha || undefined,
+  };
+  if (ev.valueFrom === "price") custom_data.value = Number(d.valor || 0);
+
+  return {
+    event_name: ev.name,
+    event_time: Math.floor(Date.now() / 1000),
+    event_id: `${kind}-${d.lead_id}`,
+    action_source: "system_generated",
+    user_data,
+    custom_data,
+  };
+}
+
 module.exports = async (req, res) => {
   const q = req.query || {};
   const kind = String(q.event || "").toLowerCase();
   if (!EVENTS[kind]) return res.status(400).json({ ok: false, error: "event deve ser lead | schedule | purchase" });
   if (!process.env.META_CAPI_TOKEN) return res.status(500).json({ ok: false, error: "META_CAPI_TOKEN não configurado" });
+
+  // Caminho direto (Capta): POST com { segredo, telefone, nome, lead_id, ... }
+  const corpo = typeof req.body === "string" ? (() => { try { return JSON.parse(req.body); } catch { return {}; } })() : (req.body || {});
+  if (corpo && corpo.direto) {
+    const esperado = (process.env.CAPTA_META_SECRET || process.env.CRON_SECRET || "").trim();
+    if (!esperado || String(corpo.segredo || "").trim() !== esperado) {
+      return res.status(401).json({ ok: false, error: "segredo inválido" });
+    }
+    if (!corpo.lead_id || !(corpo.telefone || corpo.email)) {
+      return res.status(400).json({ ok: false, error: "informe lead_id e telefone ou email" });
+    }
+    const ipD = (req.headers["x-forwarded-for"] || "").split(",")[0].trim() || undefined;
+    const data = eventoDireto(kind, corpo, ipD);
+    const payload = { data: [data] };
+    if (q.test_event_code) payload.test_event_code = String(q.test_event_code);
+    const r = await fetch(`${GRAPH}/${PIXEL_ID}/events?access_token=${encodeURIComponent(process.env.META_CAPI_TOKEN)}`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+    });
+    const j = await r.json().catch(() => ({}));
+    return res.status(200).json({ ok: r.ok, direto: true, event: data.event_name, event_id: data.event_id, meta: j });
+  }
 
   // ids: manual (?lead_id=) ou webhook da Kommo (body form-urlencoded)
   let ids = q.lead_id ? [String(q.lead_id)] : leadIdsFromWebhook(req.body);
