@@ -92,24 +92,42 @@ async function kommo(token, path, opts = {}) {
 }
 
 // Procura contato pelos dígitos do telefone. Retorna o contato (com leads) ou null.
+// O celular brasileiro aparece de dois jeitos: com o 9 (5592 9 9268-6481, 13
+// dígitos) e sem (5592 9268-6481, 12). O site manda de um jeito e o WhatsApp
+// entrega do outro — e a busca exata não achava o contato, criando um card
+// novo para a mesma mãe. Foram 138 duplicatas até setembro de 2026.
+// A comparação passa a ser pelos 8 últimos dígitos, que não mudam nunca.
+function ultimos8(v) { return digits(v).slice(-8); }
+
 async function findContactByPhone(token, phoneDig) {
   if (!phoneDig) return null;
-  const q = encodeURIComponent(phoneDig);
-  const { ok, data } = await kommo(token, `/contacts?query=${q}&with=leads&limit=10`);
-  const contacts = data?._embedded?.contacts || [];
-  if (!ok || !contacts.length) return null;
+  const alvo = ultimos8(phoneDig);
+  if (alvo.length < 8) return null;
 
-  // confirma que algum telefone do contato realmente contém esses dígitos
-  // (evita falso-positivo de busca genérica)
-  const match = contacts.find((c) => {
-    const cfs = c.custom_fields_values || [];
-    return cfs.some(
-      (f) =>
-        (f.field_code === "PHONE" || /phone/i.test(f.field_name || "")) &&
-        (f.values || []).some((v) => digits(v.value).includes(phoneDig) || phoneDig.includes(digits(v.value)))
-    );
-  });
-  return match || contacts[0];
+  // busca pelos dois formatos: o Kommo acha por trecho, mas não normaliza o 9
+  const dig = digits(phoneDig);
+  const semNove = dig.length === 13 ? dig.slice(0, 4) + dig.slice(5) : null;
+  const comNove = dig.length === 12 ? dig.slice(0, 4) + '9' + dig.slice(4) : null;
+  const buscas = [...new Set([dig, semNove, comNove, alvo].filter(Boolean))];
+
+  const vistos = [];
+  for (const termo of buscas) {
+    const { ok, data } = await kommo(token, `/contacts?query=${encodeURIComponent(termo)}&with=leads&limit=10`);
+    if (!ok) continue;
+    for (const c of data?._embedded?.contacts || []) if (!vistos.some(x => x.id === c.id)) vistos.push(c);
+    // achou alguém com o mesmo final? não precisa continuar procurando
+    const certo = vistos.find(temFinal(alvo));
+    if (certo) return certo;
+  }
+  return vistos.find(temFinal(alvo)) || null;
+}
+
+// contato cujo telefone termina nos mesmos 8 dígitos
+function temFinal(alvo) {
+  return (c) => (c.custom_fields_values || []).some(
+    (f) => (f.field_code === "PHONE" || /phone/i.test(f.field_name || "")) &&
+           (f.values || []).some((v) => ultimos8(v.value) === alvo)
+  );
 }
 
 // Dado um contato, devolve o lead aberto mais recente (ou null).
