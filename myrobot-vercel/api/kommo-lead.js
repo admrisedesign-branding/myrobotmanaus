@@ -164,10 +164,10 @@ export default async function handler(req, res) {
 
   try {
     const b = req.body || {};
-    // LGPD: registra o consentimento no Capta antes de tudo (fire-and-forget).
-    // O Capta liga o aceite ao lead pelo telefone (gatilho no banco), então não
-    // depende do id do Kommo nem do espelho ter rodado.
-    try { registrarConsentimento(b); } catch (e) { console.warn("Capta consent:", e && e.message); }
+    // O lead vai direto para o Capta, sem esperar o espelho do Kommo — assim
+    // o atendimento não fica cego se o Kommo estiver fora do ar. O Capta liga
+    // o aceite ao lead pelo telefone, então a ordem não importa.
+    try { enviarAoCapta(b); } catch (e) { console.warn("Capta ingest:", e && e.message); }
     const score = Number(b.score) || 0;
     const filho = [b.fn, b.fi ? b.fi + " anos" : ""].filter(Boolean).join(" — ");
     const cat =
@@ -285,6 +285,49 @@ export default async function handler(req, res) {
 
 // ─── LGPD: consentimento → Capta ─────────────────────────────────────────────
 // Variáveis (mesmas da captação de eventos): CAPTA_URL (opcional) · CAPTA_SLUG · CAPTA_TOKEN
+// O lead inteiro vai para o Capta, não só o consentimento. Antes ele chegava
+// lá pelo espelho do Kommo — e em 18/set/2026 o Kommo bloqueou o IP da Vercel
+// (403), deixando o Capta cego para o que entrava pelo site. Mandar direto
+// tira essa dependência: se o Kommo cair, a operação continua.
+function enviarAoCapta(b, kommoLeadId) {
+  const base  = process.env.CAPTA_URL  || "https://capta.riseagencia.com";
+  const slug  = process.env.CAPTA_SLUG || "my-robot-manaus";
+  const token = process.env.CAPTA_TOKEN;
+  if (!token) return;
+  const fone = String(b.wn || "").replace(/\D/g, "");
+  if (!fone) return;
+
+  const c = b && b.consentimento;
+  const corpo = {
+    slug, token,
+    nome: String(b.rn || "").trim() || "Lead do site",
+    contato: fone,
+    origem: "site",
+    extra: {
+      fonte: "site",
+      porta: "site",
+      crianca: String(b.fn || "").trim() || undefined,
+      idade: b.fi ? Number(String(b.fi).replace(/\D/g, "")) || undefined : undefined,
+      kommo_lead_id: kommoLeadId || undefined,
+      temperatura: "Quente",
+    },
+    respostas: b.respostas || undefined,
+  };
+  if (c && c.contato) {
+    corpo.consentimento = {
+      canal: "site", contato: true,
+      dados_crianca: !!c.dados_crianca, marketing: !!c.marketing, responsavel: !!c.responsavel,
+      versao: String(c.versao || "site-v1"),
+      texto: String(c.texto || "").slice(0, 1000),
+      url: c.url || null,
+    };
+  }
+  // sem await de propósito: o lead não pode esperar o Capta
+  fetch(`${base}/api/capta-ingest`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
+  }).catch((e) => console.warn("Capta ingest falhou:", e && e.message));
+}
+
 function registrarConsentimento(b) {
   const c = b && b.consentimento;
   if (!c || !c.contato) return;
