@@ -2103,17 +2103,41 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
       has=!!h;
     }
   }
-  if(has && !localStorage.getItem('mr_utm')){
+  // Último toque de anúncio vale: quem entrou por um anúncio e volta por outro (ex.: remarketing) passa a contar pelo novo.
+  // O primeiro toque fica guardado à parte (mr_utm_first). Acesso só por referrer não sobrescreve um anúncio já guardado.
+  var explicito=!!(p.get('utm_campaign')||p.get('utm_content')||p.get('fbclid')||p.get('gclid'));
+  if(has && (!localStorage.getItem('mr_utm') || explicito)){
     u.referrer=document.referrer||''; u.landing=location.pathname+location.search; u.ts=new Date().toISOString();
     localStorage.setItem('mr_utm', JSON.stringify(u));
+    if(!localStorage.getItem('mr_utm_first')) localStorage.setItem('mr_utm_first', JSON.stringify(u));
   }
   var utm={}; try{utm=JSON.parse(localStorage.getItem('mr_utm')||'{}');}catch(e){}
   window.MR_UTM=utm;
-  window.MR_IS_AD=/cpc|paid|ads|ppc/i.test(utm.utm_medium||'') || !!utm.fbclid || !!utm.gclid;
+  // Grupo da campanha (classe A, classe média, remarketings) -> código curto que vai na 1ª mensagem do WhatsApp
+  // ("ref: rs"). O Capta lê o código e registra de qual campanha a conversa veio. Mesma regra do Capta (api/_lib/toques.js).
+  function mrRef(u){
+    var campos=[u.utm_campaign,u.utm_content,u.utm_term];
+    for(var i=0;i<campos.length;i++){
+      var t=String(campos[i]||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+      if(!t) continue;
+      if(/(^|_)(rmkt|remarketing|retarget|retargeting)(_|$)/.test(t)){
+        if(/(completo|completa|full|todos|geral)/.test(t)) return 'rt';
+        if(/school/.test(t)) return 'rs';
+        if(/(capta|parados)/.test(t)) return 'rc';
+        return '';
+      }
+      if(/(^|_)classe_?a(_|$)/.test(t)) return 'ca';
+      if(/(^|_)classe_?(media|b|c|m)(_|$)/.test(t)) return 'cm';
+    }
+    return '';
+  }
+  window.MR_WA_REF=(utm.ts && (Date.now()-new Date(utm.ts).getTime())>30*864e5) ? '' : mrRef(utm);   // anúncio de mais de 30 dias não marca a conversa
+  window.MR_IS_AD=/cpc|paid|ads|ppc/i.test(utm.utm_medium||'') || !!utm.fbclid || !!utm.gclid || !!window.MR_WA_REF;
   window.MR_WA_TEXT=function(kind){
-    if(window.MR_IS_AD) return kind==='duvida'
+    var refTxt=window.MR_WA_REF?'\n\nref: '+window.MR_WA_REF:'';
+    if(window.MR_IS_AD) return (kind==='duvida'
       ? 'Ol\u00e1! Vi o an\u00fancio e tenho uma d\u00favida sobre a My Robot Manaus.'
-      : 'Ol\u00e1! Vi o an\u00fancio da My Robot Manaus e gostaria de saber mais.';
+      : 'Ol\u00e1! Vi o an\u00fancio da My Robot Manaus e gostaria de saber mais.')+refTxt;
     return kind==='duvida'
       ? 'Ol\u00e1! Tenho uma d\u00favida sobre a My Robot Manaus.'
       : 'Ol\u00e1! Estou no site da My Robot Manaus e gostaria de saber mais.';
@@ -3329,7 +3353,7 @@ function submitForm() {
   const ss=document.getElementById('successSub'); if(ss) ss.textContent=mom==='matricular'?'Sua vaga está sendo reservada! Confirme agora pelo WhatsApp.':'Aula experimental agendada! Confirme pelo WhatsApp.';
   const sb=document.getElementById('scoreBadge'); if(sb){sb.style.display='none';}
   const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
-  const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg);
+  const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg+(window.MR_WA_REF?'\n\nref: '+window.MR_WA_REF:''));
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
   // Meta Pixel + GA — evento Lead
   try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('✓ Pixel Lead fired'); } }catch(e){}

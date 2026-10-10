@@ -312,6 +312,7 @@ function enviarAoCapta(b, kommoLeadId) {
       temperatura: "Quente",
     },
     respostas: b.respostas || undefined,
+    utm: (b.utm && typeof b.utm === 'object') ? b.utm : undefined,   // campanha/grupo do anúncio → rastreio no Capta
   };
   if (c && c.contato) {
     corpo.consentimento = {
