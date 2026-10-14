@@ -3355,9 +3355,7 @@ function submitForm() {
   const wppNum='5592994163709'; // ← TROQUE PELO NÚMERO REAL
   const wppUrl='https://wa.me/'+wppNum+'?text='+encodeURIComponent(msg+(window.MR_WA_REF?'\n\nref: '+window.MR_WA_REF:''));
   const wb=document.getElementById('wppBtn'); if(wb) wb.href=wppUrl;
-  // Meta Pixel + GA — evento Lead
-  try{ if(typeof fbq!=='undefined'){ fbq('track','Lead'); console.log('✓ Pixel Lead fired'); } }catch(e){}
-  try{ if(typeof gtag!=='undefined'){ gtag('event','generate_lead',{event_category:'formulario',event_label:'site'}); } }catch(e){}
+  // Pixel Lead + GA generate_lead já disparam acima (uma vez só por envio)
   if(score>=55) setTimeout(()=>window.open(wppUrl,'_blank'),1400);
 }
 // WhatsApp input mask
