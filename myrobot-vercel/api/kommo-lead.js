@@ -298,6 +298,20 @@ function enviarAoCapta(b, kommoLeadId) {
   if (!fone) return;
 
   const c = b && b.consentimento;
+  // Resumo no mesmo formato do bot do WhatsApp, para o atendente ver o mesmo perfil de qualquer porta.
+  const cat = ["Quente", "Morno", "Frio"].find((k) => String(b.categoria || "").toLowerCase().includes(k.toLowerCase())) || "Frio";
+  const linha = (rot, v) => (v ? `${rot}: ${String(v).trim()}` : null);
+  const notas = [
+    "Qualificação Site",
+    linha("Bairro", b.bairro),
+    linha("Interesse", b.area),
+    linha("Momento", String(b.mom || "").replace(/^[^\p{L}]+/u, "")),
+    linha("Objetivo", b.obj),
+    linha("Contato prévio", b.cont),
+    linha("Trilha", b.trilha),
+    linha("Origem", b.orig),
+    linha("Responsável", b.rn),
+  ].filter(Boolean).join(" · ");
   const corpo = {
     slug, token,
     nome: String(b.rn || "").trim() || "Lead do site",
@@ -309,7 +323,11 @@ function enviarAoCapta(b, kommoLeadId) {
       crianca: String(b.fn || "").trim() || undefined,
       idade: b.fi ? Number(String(b.fi).replace(/\D/g, "")) || undefined : undefined,
       kommo_lead_id: kommoLeadId || undefined,
-      temperatura: "Quente",
+      email: String(b.em || "").trim() || undefined,
+      curso: b.area || undefined,
+      score: Number(b.score) || 0,
+      temperatura: cat,
+      notas,
     },
     respostas: b.respostas || undefined,
     utm: (b.utm && typeof b.utm === 'object') ? b.utm : undefined,   // campanha/grupo do anúncio → rastreio no Capta
