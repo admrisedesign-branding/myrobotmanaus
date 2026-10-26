@@ -127,7 +127,7 @@ function eventoDireto(kind, d, ip) {
     ...(d.email && { em: [sha(String(d.email).trim().toLowerCase())] }),
     ...(d.nome && { fn: [sha(normName(String(d.nome).split(" ")[0]))] }),
   };
-  if (d.fbclid) user_data.fbc = `fb.1.${Date.now()}.${d.fbclid}`;
+  if (d.fbclid) user_data.fbc = `fb.1.${Number(d.fbc_ts) || Date.now()}.${d.fbclid}`;   // fbc_ts = quando o lead chegou (o mais perto do clique)
   if (d.fbp) user_data.fbp = d.fbp;
 
   const custom_data = {
