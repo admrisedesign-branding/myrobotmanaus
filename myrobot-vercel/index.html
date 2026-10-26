@@ -2940,7 +2940,6 @@ footer .footer-bottom-text a { color: #A78BFF !important; }
                 <div class="opt-grid-f opt-grid-3f">
                   <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="robotica"><div class="opt-dot-f"></div><span>🤖</span><span class="opt-label-f">Robótica</span></label>
                   <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="programacao"><div class="opt-dot-f"></div><span>💻</span><span class="opt-label-f">Programação</span></label>
-                  <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="ia"><div class="opt-dot-f"></div><span>🧠</span><span class="opt-label-f">IA</span></label>
                   <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="jogos"><div class="opt-dot-f"></div><span>🎮</span><span class="opt-label-f">Jogos</span></label>
                   <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="empreendedorismo"><div class="opt-dot-f"></div><span>🌐</span><span class="opt-label-f">Empreendedorismo</span></label>
                   <label class="opt-card-f" onclick="selectOpt(this,'area')"><input type="radio" name="area" value="nao_sei"><div class="opt-dot-f"></div><span>🤷</span><span class="opt-label-f">Não sei</span></label>
@@ -3304,7 +3303,7 @@ function submitForm() {
   const cont=document.querySelector('[name="contato"]:checked')?.value||'';
   const trilhaM={6:'Exploradores',7:'Exploradores',8:'Exploradores',9:'Exploradores',10:'Exploradores',11:'Construtores',12:'Construtores',13:'Construtores',14:'Construtores',15:'Construtores'};
   const trilha=trilhaM[parseInt(fi)]||'Inovadores';
-  const areaL={robotica:'Robótica',programacao:'Programação',ia:'Inteligência Artificial',jogos:'Jogos',web:'Empreendedorismo',nao_sei:'Ainda não definido'}[area]||area;
+  const areaL={robotica:'Robótica',programacao:'Programação',ia:'Inteligência Artificial',jogos:'Jogos',web:'Empreendedorismo',empreendedorismo:'Empreendedorismo',nao_sei:'Ainda não definido'}[area]||area;
   const momL={matricular:'🔥 Quer matricular imediatamente',aula_exp:'📅 Aula experimental',pesquisando:'🔍 Pesquisando opções',conhecer:'👀 Só conhecer'}[mom]||mom;
   const objL={futuro:'Preparar para o futuro',raciocinio:'Raciocínio lógico',criatividade:'Criatividade',telas:'Reduzir telas',oportunidades:'Oportunidades profissionais',ama_tech:'Já ama tecnologia'}[obj]||obj;
   const contL={nunca:'Nunca programou',usa:'Usa apps/jogos',tentou:'Já tentou programar',faz_curso:'Já faz curso de tech'}[cont]||cont;
