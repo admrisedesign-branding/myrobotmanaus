@@ -100,10 +100,8 @@ a{color:inherit}
 .proof{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;font-size:13px;color:var(--mut)}
 .proof span{display:inline-flex;align-items:center;gap:7px}
 .proof span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange)}
-.robos{position:relative;display:flex;justify-content:center;align-items:center;margin:18px -20px 0;height:min(62vw,300px);-webkit-mask-image:radial-gradient(closest-side,#000 58%,transparent 100%);mask-image:radial-gradient(closest-side,#000 58%,transparent 100%)}
-.robos img{height:100%;width:auto;display:block}
-.robos img:first-child{-webkit-mask-image:linear-gradient(to right,#000 70%,transparent);mask-image:linear-gradient(to right,#000 70%,transparent)}
-.robos img + img{margin-left:-14%;-webkit-mask-image:linear-gradient(to left,#000 70%,transparent);mask-image:linear-gradient(to left,#000 70%,transparent)}
+.robos{position:relative;display:flex;justify-content:center;align-items:flex-end;margin:14px 0 0;height:min(66vw,300px)}
+.robos img{height:100%;width:auto;display:block;filter:drop-shadow(0 0 40px rgba(255,106,26,.28))}
 
 /* seções */
 section{padding:64px 0}
@@ -204,7 +202,7 @@ footer p{margin-top:4px}
   .hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center}
   .cta-row{flex-direction:row;align-items:center}
   .cta-row .btn{white-space:nowrap}
-  .robos{height:420px;margin:0}
+  .robos{height:440px;margin:0}
   .vc{display:inline-flex}
   .ofertas{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible;margin:36px 0 0;padding:0}
   .of{flex:none}
@@ -241,10 +239,7 @@ footer p{margin-top:4px}
       </div>
       <div class="proof"><span>Robótica, programação e IA</span><span>A partir de 5 anos</span><span>Turmas pequenas</span></div>
     </div>
-    <div class="robos" aria-hidden="true">
-      <img src="/assets/bf/robo-a.webp" alt="" width="422" height="455" fetchpriority="high">
-      <img src="/assets/bf/robo-b.webp" alt="" width="402" height="445">
-    </div>
+    <div class="robos" aria-hidden="true"><img src="/assets/bf/robos.webp" alt="" width="724" height="594" fetchpriority="high"></div>
   </div>
 </section>
 
