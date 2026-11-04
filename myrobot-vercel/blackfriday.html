@@ -163,7 +163,7 @@ h2{font-size:clamp(30px,7vw,46px);margin-bottom:12px}
 .pa span{color:var(--mut);font-size:15.5px}
 
 /* por que */
-.pq{display:grid;gap:22px;margin-top:30px}
+.pq{display:grid;gap:12px;margin-top:30px}
 .pq div b{display:block;font-size:19px;margin-bottom:4px;font-family:'Bricolage Grotesque',sans-serif}
 .pq div span{color:var(--mut);font-size:15.5px}
 .pq div{padding-left:18px;border-left:2px solid var(--orange)}
@@ -255,7 +255,9 @@ section:not(.hero) .sub,.priv{margin-left:auto;margin-right:auto}
 .of ul{justify-items:start;width:fit-content;margin:12px auto 0}
 .of li{text-align:left}
 .pa{flex-direction:column;align-items:center;text-align:center}
-.pq div{padding:18px 0 0;border-left:0;border-top:2px solid var(--orange);max-width:340px;margin:0 auto}
+.pq div{padding:22px 20px;border:1px solid var(--line);background:var(--bg2);border-radius:var(--r);max-width:none;margin:0}
+.pq div i{display:block;font-style:normal;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:15px;color:var(--orange);letter-spacing:.08em;margin-bottom:8px}
+.pq div b{font-size:20px;margin-bottom:6px}
 .form{margin-left:auto;margin-right:auto;text-align:left}
 .passo h3,.passo .s,.ok{text-align:center}
 .priv{text-align:center}
@@ -264,6 +266,13 @@ footer .wrap{text-align:center}
 footer img{margin-left:auto;margin-right:auto}
 
 
+/* faixa de dados */
+.dados{background:#111113;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:22px 0}
+.dados .wrap{display:grid;grid-template-columns:1fr 1fr;gap:18px 0}
+.dd{padding:0 8px;text-align:center}
+.dd b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(26px,7.5vw,36px);line-height:1;color:var(--orange);letter-spacing:-.02em}
+.dd span{display:block;margin-top:5px;font-size:13px;color:var(--mut)}
+@media(min-width:760px){.dados .wrap{grid-template-columns:repeat(4,1fr)}.dd+.dd{border-left:1px solid var(--line)}}
 /* prova social */
 .stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:44px}
 .stat{background:#141416;border:1px solid var(--line);border-radius:var(--r);padding:20px 10px}
@@ -381,6 +390,15 @@ footer img{margin-left:auto;margin-right:auto}
   </div>
 </section>
 
+<section class="dados" aria-label="Números da My Robot">
+  <div class="wrap">
+    <div class="dd"><b>500+</b><span>alunos formados</span></div>
+    <div class="dd"><b>5,0 ★</b><span>no Google · 50 avaliações</span></div>
+    <div class="dd"><b>97%</b><span>de satisfação dos pais</span></div>
+    <div class="dd"><b>8+</b><span>anos de inovação</span></div>
+  </div>
+</section>
+
 <section id="condicoes" class="on-or">
   <div class="wrap">
     <div class="eyebrow">Condições de Black Friday</div>
@@ -433,16 +451,9 @@ footer img{margin-left:auto;margin-right:auto}
     <h2>Aprender fazendo. De verdade.</h2>
     <p class="sub">Famílias de Manaus já escolheram. Veja o que dizem.</p>
     <div class="pq">
-      <div><b>Mão na massa</b><span>Montar, programar e testar robôs reais, em vez de só assistir a uma aula.</span></div>
-      <div><b>Trilhas por idade</b><span>Do primeiro contato com robótica até programação e inteligência artificial.</span></div>
-      <div><b>Atenção de perto</b><span>Turmas pequenas, com instrutores acompanhando cada criança.</span></div>
-    </div>
-    <div class="stats">
-      <div class="stat"><b>500+</b><span>alunos formados</span></div>
-      <div class="stat"><b>5,0 ★</b><span>no Google (50 avaliações)</span></div>
-      <div class="stat"><b>97%</b><span>de satisfação dos pais</span></div>
-      <div class="stat"><b>8+</b><span>anos de inovação</span></div>
-      
+      <div><i>01</i><b>Mão na massa</b><span>Montar, programar e testar robôs reais, em vez de só assistir a uma aula.</span></div>
+      <div><i>02</i><b>Trilhas por idade</b><span>Do primeiro contato com robótica até programação e inteligência artificial.</span></div>
+      <div><i>03</i><b>Atenção de perto</b><span>Turmas pequenas, com instrutores acompanhando cada criança.</span></div>
     </div>
     <div class="depos">
       <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Amamos a My Robot! Nosso filho é sempre muito bem acolhido e estimulado a criar e desenvolver suas habilidades. O cuidado, acompanhamento e comprometimento de toda a equipe nos dá a certeza de que fizemos a melhor escolha.”</p><div class="au"><div class="av">BB</div><div><b>Bruno Baranda</b><span>Pai de aluno da My Robot Manaus</span></div></div></article>
