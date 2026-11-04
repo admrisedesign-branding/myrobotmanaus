@@ -361,6 +361,17 @@ footer img{margin-left:auto;margin-right:auto}
 .on-wh summary::after{color:#E5560A}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 
+
+/* só preto e laranja: seções escuras alternam o tom */
+section.alt{background:#111113;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.alt .pq div{background:#1A1A1D;border-color:#2a2a2f;box-shadow:none}
+.alt .galeria figure{background:#1A1A1D;border-color:#2a2a2f}
+.depo{background:#17171A;border-color:#2a2a2f;box-shadow:none}
+.depo p{color:#e6e6ea}
+.depo .au{border-top-color:#2a2a2f}
+.depo .au b{color:#fff}
+.depo .au span{color:var(--mut)}
+.gsel{background:#17171A;border-color:#2a2a2f;color:#fff;box-shadow:none}
 /* mobile: cards em carrossel horizontal + sem pan lateral */
 html{overflow-x:hidden;overscroll-behavior-x:none}
 body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
@@ -414,7 +425,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
 <section class="dados" aria-label="Números da My Robot">
   <div class="wrap">
     <div class="dd"><b>500+</b><span>alunos formados</span></div>
-    <div class="dd"><b>5,0 ★</b><span>no Google · 50 avaliações</span></div>
+    <div class="dd"><b>12+</b><span>cursos disponíveis</span></div>
     <div class="dd"><b>97%</b><span>de satisfação dos pais</span></div>
     <div class="dd"><b>8+</b><span>anos de inovação</span></div>
   </div>
@@ -454,7 +465,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </section>
 
-<section class="on-wh">
+<section>
   <div class="wrap">
     <div class="eyebrow">Como funciona</div>
     <h2>Em três passos simples.</h2>
@@ -466,7 +477,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </section>
 
-<section class="on-wh on-cz">
+<section class="alt">
   <div class="wrap">
     <div class="eyebrow">Por que My Robot</div>
     <h2>Aprender fazendo. De verdade.</h2>
@@ -487,7 +498,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </section>
 
-<section class="on-wh">
+<section>
   <div class="wrap">
     <div class="eyebrow">Quem já vive isso</div>
     <h2>O que as famílias dizem.</h2>
@@ -568,7 +579,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </section>
 
-<section class="on-wh">
+<section class="alt">
   <div class="wrap">
     <div class="eyebrow">Dúvidas frequentes</div>
     <h2>Antes de agendar.</h2>
