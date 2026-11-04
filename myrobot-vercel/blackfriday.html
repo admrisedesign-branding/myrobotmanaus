@@ -262,6 +262,40 @@ details{text-align:left}
 footer .wrap{text-align:center}
 footer img{margin-left:auto;margin-right:auto}
 
+
+/* prova social */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:44px}
+.stat{background:#141416;border:1px solid var(--line);border-radius:var(--r);padding:20px 10px}
+.stat b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(34px,9vw,46px);line-height:1;color:var(--orange);letter-spacing:-.02em}
+.stat span{display:block;margin-top:6px;font-size:14px;color:var(--mut)}
+.depos{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:34px -20px 0;padding:4px 20px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.depos::-webkit-scrollbar{display:none}
+.depo{flex:0 0 86%;scroll-snap-align:center;background:#17171A;border:1px solid var(--line);border-radius:var(--r);padding:22px 20px;text-align:left}
+.depo .st{color:var(--orange);letter-spacing:2px;font-size:15px;margin-bottom:10px}
+.depo p{color:#e6e6ea;font-size:15.5px;line-height:1.6}
+.depo .au{display:flex;align-items:center;gap:12px;margin-top:16px}
+.depo .av{width:40px;height:40px;border-radius:50%;background:rgba(255,106,26,.16);color:var(--orange);display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto}
+.depo .au b{display:block;font-size:14.5px}
+.depo .au span{font-size:13px;color:var(--mut)}
+.fotos{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:26px -20px 0;padding:4px 20px 10px;scrollbar-width:none}
+.fotos::-webkit-scrollbar{display:none}
+.fotos figure{flex:0 0 auto;scroll-snap-align:center;position:relative}
+.fotos img{display:block;height:min(66vw,340px);width:auto;border-radius:18px;border:1px solid var(--line)}
+.fotos figcaption{position:absolute;left:10px;bottom:10px;background:rgba(11,11,12,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px}
+.micro{margin-top:12px;text-align:center;font-size:13px;color:var(--mut)}
+.on-or .micro{color:#6b5446}
+.aviso{display:inline-block;margin-top:22px;background:#1A0B03;color:#fff;font-weight:600;font-size:14px;padding:10px 16px;border-radius:99px}
+.depo-form{margin:18px auto 0;max-width:560px;background:rgba(255,247,240,.2);border:1px solid rgba(255,255,255,.45);border-radius:16px;padding:14px 16px;text-align:left;color:#2A1305;font-size:14px;line-height:1.5}
+.depo-form .st{color:#fff;letter-spacing:2px;font-size:13px;margin-bottom:4px}
+.depo-form i{display:block;font-style:italic}
+.depo-form strong{font-style:normal;font-weight:700}
+@media(min-width:760px){
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .depos{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;margin:36px 0 0;padding:0}
+  .depo{flex:none}
+  .fotos{justify-content:center;overflow:visible;margin:30px 0 0;padding:0}
+  .fotos img{height:360px}
+}
 /* alternância de cores: preto (hero) → laranja → branco → preto → laranja → branco → preto */
 .on-or{background:linear-gradient(165deg,#FF7C33 0%,#F5650F 100%)!important;border:0!important;color:#2A1305}
 .on-or .eyebrow{color:#2A1305;opacity:.7}
@@ -375,6 +409,7 @@ footer img{margin-left:auto;margin-right:auto}
         <p><b>Até 25%</b> em itens da loja no PIX ou no débito. No crédito, até 10% em até 3x sem juros.</p>
       </article>
     </div>
+    <p class="aviso">Black Pass vale para dois contratos fechados em novembro de 2026.</p>
     <p class="fine">Campanha Black Friday 2026 da My Robot School Manaus, sujeita à disponibilidade de horários e às regras da unidade. Acertou, Ganhou! e Black Pass não são cumulativos entre si. O voucher de indicação e os descontos da loja são cumulativos. Black Pass: dois novos alunos, com dois contratos firmados em novembro de 2026. Descontos da loja em itens selecionados.</p>
   </div>
 </section>
@@ -395,11 +430,28 @@ footer img{margin-left:auto;margin-right:auto}
   <div class="wrap">
     <div class="eyebrow">Por que My Robot</div>
     <h2>Aprender fazendo. De verdade.</h2>
+    <p class="sub">Famílias de Manaus já escolheram. Veja o que dizem.</p>
     <div class="pq">
       <div><b>Mão na massa</b><span>Montar, programar e testar robôs reais, em vez de só assistir a uma aula.</span></div>
       <div><b>Trilhas por idade</b><span>Do primeiro contato com robótica até programação e inteligência artificial.</span></div>
       <div><b>Atenção de perto</b><span>Turmas pequenas, com instrutores acompanhando cada criança.</span></div>
     </div>
+    <div class="stats">
+      <div class="stat"><b>500+</b><span>alunos formados</span></div>
+      <div class="stat"><b>97%</b><span>de satisfação dos pais</span></div>
+      <div class="stat"><b>8+</b><span>anos de inovação</span></div>
+      <div class="stat"><b>12+</b><span>cursos disponíveis</span></div>
+    </div>
+    <div class="depos">
+      <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Amamos a My Robot! Nosso filho é sempre muito bem acolhido e estimulado a criar e desenvolver suas habilidades. O cuidado, acompanhamento e comprometimento de toda a equipe nos dá a certeza de que fizemos a melhor escolha.”</p><div class="au"><div class="av">BB</div><div><b>Bruno Baranda</b><span>Pai de aluno da My Robot Manaus</span></div></div></article>
+      <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Em pouco tempo meu filho Martin, de 4 anos, já demonstra crescimento surpreendente na concentração e na forma como resolve problemas. As aulas são dinâmicas e pensadas para despertar o interesse desde cedo.”</p><div class="au"><div class="av">NS</div><div><b>Neyla Souza</b><span>Mãe do Martin, 4 anos</span></div></div></article>
+      <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Simplesmente a melhor experiência educacional que já presenciei! O ambiente é moderno, os professores são apaixonados e a metodologia traduz conceitos complexos de forma lúdica.”</p><div class="au"><div class="av">KL</div><div><b>Katia Lopes</b><span>Responsável de aluno da My Robot Manaus</span></div></div></article>
+    </div>
+    <div class="fotos">
+      <figure><img src="/assets/bf/unidade.webp" alt="Aluna recebendo certificado na unidade My Robot Manaus" width="760" height="1013" loading="lazy"><figcaption>Na unidade de Manaus</figcaption></figure>
+      <figure><img src="/assets/bf/aula.webp" alt="Crianças montando robôs durante a aula" width="900" height="506" loading="lazy"><figcaption>Aula prática</figcaption></figure>
+    </div>
+
   </div>
 </section>
 
@@ -456,6 +508,7 @@ footer img{margin-left:auto;margin-right:auto}
         <div class="er" id="e-c1">Para continuar, marque a autorização de contato</div>
         <label class="ck opt2" for="c2"><input type="checkbox" id="c2"><span>Quero receber novidades e promoções da My Robot no WhatsApp.</span></label>
         <div class="nav"><button class="btn btn-ghost" type="button" data-next="2">Voltar</button><button class="btn btn-or" type="button" id="enviar">Quero minha aula experimental</button></div>
+        <p class="micro">Você confirma o horário pelo WhatsApp, sem compromisso.</p>
       </div>
 
       <div class="ok" id="ok">
@@ -465,6 +518,7 @@ footer img{margin-left:auto;margin-right:auto}
         <a class="btn btn-wa" id="wa" href="https://wa.me/5592994163709" target="_blank" rel="noopener">Confirmar pelo WhatsApp</a>
       </div>
     </div>
+    <div class="depo-form"><div class="st">★★★★★</div><i>“Excelente atendimento. Pessoas educadas e acolhedoras. Espaço bem distribuído e limpo. Equipamentos novos e atualizados. Recomendo!”</i><strong>— Daniele Simões</strong>, responsável de aluno</div>
     <p class="priv">Ao enviar, você concorda com o uso dos dados conforme nossa <a href="/privacidade">política de privacidade</a>.</p>
   </div>
 </section>
@@ -543,12 +597,24 @@ footer img{margin-left:auto;margin-right:auto}
   /* troca de passo sem rolar a tela (nada de pulo) */
   function ir(n){
     if(n>etapa && !valida(etapa)) return;
-    etapa=n;
+    etapa=n; ev('form_step',{event_category:'black-friday',event_label:'passo-'+n});
     $$('.passo').forEach(function(p){ p.classList.remove('on'); });
     $('#p'+n).classList.add('on');
     $$('#prog i').forEach(function(b,i){ b.classList.toggle('on', i<n); });
   }
   $$('[data-next]').forEach(function(b){ b.addEventListener('click',function(){ ir(parseInt(b.getAttribute('data-next'),10)); }); });
+
+  /* medição: passo do formulário, clique no WhatsApp e profundidade de rolagem */
+  function ev(n,p){ try{ if(window.gtag) gtag('event',n,p||{}); }catch(e){} }
+  $('#wa').addEventListener('click',function(){
+    try{ if(window.fbq) fbq('track','Contact'); }catch(e){}
+    ev('whatsapp_click',{event_category:'black-friday'});
+  });
+  var prof={25:0,50:0,75:0,90:0};
+  window.addEventListener('scroll',function(){
+    var h=document.documentElement, p=Math.round((h.scrollTop+innerHeight)/h.scrollHeight*100);
+    for(var k in prof){ if(!prof[k] && p>=k){ prof[k]=1; ev('scroll_depth',{event_category:'black-friday',event_label:k+'%'}); } }
+  },{passive:true});
 
   function pontos(mom){ return mom==='matricular'?50:mom==='aula_exp'?40:mom==='pesquisando'?20:10; }
 
