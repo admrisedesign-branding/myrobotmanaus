@@ -89,21 +89,26 @@ a{color:inherit}
 .btn-ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
 
 /* hero */
-.hero{position:relative;padding:20px 0 0;overflow:hidden;min-height:calc(100vh - 61px);min-height:calc(100svh - 61px);display:flex;align-items:stretch}
+.hero{position:relative;padding:12px 0 0;overflow:hidden;min-height:calc(100vh - 61px);min-height:calc(100svh - 61px);display:flex;align-items:stretch}
 .hero>.wrap{display:flex;flex-direction:column}
 .hero::before{content:'';position:absolute;right:-20%;top:-10%;width:90%;height:90%;background:radial-gradient(closest-side,rgba(255,106,26,.22),transparent 70%);pointer-events:none}
+.bflogo{display:block;width:min(46vw,175px,24svh);height:auto;overflow:visible;margin:0 0 6px}
+.bflogo .glow{animation:bfpulse 2.4s ease-in-out infinite alternate}
+@keyframes bfpulse{from{opacity:.55}to{opacity:1}}
+@media(min-width:760px){.bflogo{width:min(30vw,340px,34svh);margin-bottom:12px}}
+@media(prefers-reduced-motion:reduce){.bflogo .glow{animation:none}}
 .chip{display:inline-flex;max-width:100%;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--orange);border:1px solid rgba(255,106,26,.4);background:rgba(255,106,26,.08);border-radius:99px;padding:7px 14px}
 .chip i{width:7px;height:7px;border-radius:50%;background:var(--orange);display:block}
 .hero h1{font-size:clamp(34px,8.8vw,60px);margin:16px 0 14px;max-width:17ch}
 .hero h1 em{font-style:normal;color:var(--orange)}
 .hero p.lead{font-size:clamp(16px,4.2vw,19px);color:var(--mut);max-width:44ch}
-.cta-row{display:flex;flex-direction:column;gap:12px;margin-top:26px}
+.cta-row{display:flex;flex-direction:column;gap:12px;margin-top:18px}
 .proof{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;font-size:13px;color:var(--mut)}
 .proof span{display:inline-flex;align-items:center;gap:7px}
 .proof span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange)}
 .robos{position:relative;flex:1 1 auto;min-height:300px;margin-top:6px}
-.robos{container-type:size}
-.stage{position:absolute;top:50%;left:50%;height:min(100cqh,calc(100cqw * .908));aspect-ratio:1316/1195;transform:translate(-50%,-50%)}
+.robos{container-type:inline-size}
+.stage{position:absolute;top:50%;left:50%;height:min(100%,calc(100cqw * .908));aspect-ratio:1316/1195;transform:translate(-50%,-50%)}
 .float{position:absolute;inset:0;animation:flut 5s ease-in-out infinite}
 .float>img:first-child{position:absolute;left:0;top:0;width:100%;height:100%;display:block;filter:drop-shadow(0 0 40px rgba(255,106,26,.28))}
 .tela{position:absolute;inset:0}
@@ -260,7 +265,17 @@ footer img{margin-left:auto;margin-right:auto}
 <section class="hero">
   <div class="wrap">
     <div>
-      <span class="chip"><i></i>Black Friday 2026 · My Robot Manaus</span>
+      <h2 class="sr">Black Friday 2026 · My Robot Manaus</h2><svg class="bflogo" viewBox="0 8 820 414" role="img" aria-label="Black Friday 2026" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bfg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFB347"/><stop offset=".5" stop-color="#FF7A1A"/><stop offset="1" stop-color="#FF5A00"/></linearGradient>
+    <filter id="bfglow" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="7"/></filter>
+  </defs>
+  <g class="tagline" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <g class="glow" stroke="#FF6A1A" stroke-width="9" filter="url(#bfglow)"><path id="bfo" d="M560 358 L690 350 Q735 346 745 310 L792 176 Q806 150 800 128 L728 30 Q716 14 690 16 L105 44 Q42 52 42 112 L42 330 Q42 394 100 392 L290 380 M300 412 L552 406"/><circle cx="776" cy="156" r="15"/></g>
+    <g stroke="url(#bfg)" stroke-width="5"><path d="M560 358 L690 350 Q735 346 745 310 L792 176 Q806 150 800 128 L728 30 Q716 14 690 16 L105 44 Q42 52 42 112 L42 330 Q42 394 100 392 L290 380 M300 412 L552 406"/><circle cx="776" cy="156" r="15"/></g>
+  </g>
+  <image href="/assets/bf/bf-texto.webp" x="88" y="47" width="661" height="355"/>
+</svg>
       <h1>O futuro do seu filho começa com uma <em>grande descoberta.</em></h1>
       <p class="lead">Agende uma aula experimental exclusiva e conheça as condições especiais de Black Friday para novas matrículas.</p>
       <div class="cta-row">
