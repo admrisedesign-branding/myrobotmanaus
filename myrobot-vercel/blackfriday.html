@@ -111,6 +111,18 @@ a{color:inherit}
 .stage{position:absolute;top:50%;left:50%;height:min(100%,calc(100cqw * .908));aspect-ratio:1316/1195;transform:translate(-50%,-50%)}
 .float{position:absolute;inset:0;animation:flut 5s ease-in-out infinite}
 .float>img:first-child{position:absolute;left:0;top:0;width:100%;height:100%;display:block;filter:drop-shadow(0 0 40px rgba(255,106,26,.28))}
+.bolha{position:absolute;z-index:3;display:block;max-width:44%;padding:.5em .75em .55em;border-radius:1.1em;background:rgba(20,20,22,.88);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1.5px solid rgba(255,138,69,.75);box-shadow:0 0 0 1px rgba(255,106,26,.15),0 8px 26px -6px rgba(255,106,26,.55);color:#fff;font-size:clamp(11px,3.1vw,16px);line-height:1.15;text-align:left;animation:bola 4.2s ease-in-out infinite}
+.bolha b{display:block;font-family:'Bricolage Grotesque','Inter',sans-serif;font-weight:800;font-size:1.55em;letter-spacing:-.02em;color:var(--orange);line-height:1}
+.bolha b small{font-size:.62em;font-weight:700;color:#fff;margin-right:.2em;letter-spacing:0}
+.bolha span{display:block;margin-top:.25em;font-size:.72em;font-weight:500;color:#d4d4da}
+.bolha::after{content:'';position:absolute;width:.9em;height:.9em;background:inherit;border:inherit;border-top:0;border-left:0;transform:rotate(45deg);bottom:-.5em;left:1.4em;-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none}
+.bolha.d::after{left:auto;right:1.4em}
+.bolha.up::after{bottom:auto;top:-.5em;transform:rotate(225deg)}
+.bolha:nth-of-type(2){animation-delay:-1.1s}.bolha:nth-of-type(3){animation-delay:-2.2s}.bolha:nth-of-type(4){animation-delay:-3.1s}
+@keyframes bola{0%,100%{translate:0 0}50%{translate:0 -7px}}
+@media(max-width:759px){.bolha[data-p="25"]{top:43%!important}.bolha[data-p="150"]{top:62%!important}.bolha[data-p="10"]{top:64%!important}}
+@media(min-width:760px){.bolha{font-size:clamp(14px,1.25vw,18px)}}
+@media(prefers-reduced-motion:reduce){.bolha{animation:none}}
 .tela{position:absolute;inset:0}
 .float .o{position:absolute;display:block;transform-origin:50% 55%;animation:pisca 4.8s infinite,pula 1.5s ease-in-out infinite alternate,brilha 2.2s ease-in-out infinite alternate}
 .float .o.g{animation-delay:.35s,.2s,.4s}
@@ -284,7 +296,11 @@ footer img{margin-left:auto;margin-right:auto}
       </div>
       <div class="proof"><span>Robótica, programação e IA</span><span>A partir de 5 anos</span><span>Turmas pequenas</span></div>
     </div>
-    <div class="robos" aria-hidden="true"><div class="stage"><div class="float"><img src="/assets/bf/robos-base.webp" alt="" width="1053" height="956" fetchpriority="high"><div class="tela" style="clip-path:polygon(17.477% 14.142%,16.565% 15.983%,15.578% 19.163%,14.21% 26.527%,14.438% 29.121%,14.97% 30.209%,15.881% 31.13%,17.629% 32.05%,41.109% 37.657%,43.465% 37.657%,45.289% 36.234%,47.036% 31.883%,48.252% 25.188%,48.252% 23.431%,47.796% 21.423%,47.036% 20.0%,45.517% 18.494%,42.781% 16.82%,37.994% 14.812%,32.219% 13.054%,24.012% 11.548%,20.973% 11.715%,18.997% 12.552%)"><img class="o b" src="/assets/bf/olhos/b-esq.webp" alt="" style="left:16.717%;top:16.904%;width:15.881%;height:12.552%"><img class="o b" src="/assets/bf/olhos/b-dir.webp" alt="" style="left:33.511%;top:21.255%;width:13.678%;height:12.469%"></div><div class="tela" style="clip-path:polygon(83.739% 16.653%,82.371% 15.146%,80.775% 14.31%,79.255% 13.975%,75.836% 14.059%,70.137% 15.146%,65.122% 16.569%,60.638% 18.243%,56.915% 20.167%,55.319% 21.423%,54.103% 23.013%,53.571% 24.351%,53.343% 26.109%,54.103% 31.464%,55.851% 36.736%,56.611% 37.824%,57.827% 38.661%,60.486% 38.912%,76.14% 35.649%,81.383% 34.226%,84.498% 32.887%,86.17% 31.13%,86.702% 29.54%,86.778% 28.033%,85.714% 22.008%,84.802% 18.912%)"><img class="o g" src="/assets/bf/olhos/g-esq.webp" alt="" style="left:53.419%;top:22.51%;width:15.274%;height:11.715%"><img class="o g" src="/assets/bf/olhos/g-dir.webp" alt="" style="left:71.277%;top:15.314%;width:14.21%;height:14.393%"><img class="o boca g" src="/assets/bf/olhos/g-boca.webp" alt="" style="left:65.198%;top:28.033%;width:11.474%;height:9.456%"></div></div></div></div>
+    <div class="robos" aria-hidden="true"><div class="stage"><div class="float"><img src="/assets/bf/robos-base.webp" alt="" width="1053" height="956" fetchpriority="high"><div class="tela" style="clip-path:polygon(17.477% 14.142%,16.565% 15.983%,15.578% 19.163%,14.21% 26.527%,14.438% 29.121%,14.97% 30.209%,15.881% 31.13%,17.629% 32.05%,41.109% 37.657%,43.465% 37.657%,45.289% 36.234%,47.036% 31.883%,48.252% 25.188%,48.252% 23.431%,47.796% 21.423%,47.036% 20.0%,45.517% 18.494%,42.781% 16.82%,37.994% 14.812%,32.219% 13.054%,24.012% 11.548%,20.973% 11.715%,18.997% 12.552%)"><img class="o b" src="/assets/bf/olhos/b-esq.webp" alt="" style="left:16.717%;top:16.904%;width:15.881%;height:12.552%"><img class="o b" src="/assets/bf/olhos/b-dir.webp" alt="" style="left:33.511%;top:21.255%;width:13.678%;height:12.469%"></div><div class="tela" style="clip-path:polygon(83.739% 16.653%,82.371% 15.146%,80.775% 14.31%,79.255% 13.975%,75.836% 14.059%,70.137% 15.146%,65.122% 16.569%,60.638% 18.243%,56.915% 20.167%,55.319% 21.423%,54.103% 23.013%,53.571% 24.351%,53.343% 26.109%,54.103% 31.464%,55.851% 36.736%,56.611% 37.824%,57.827% 38.661%,60.486% 38.912%,76.14% 35.649%,81.383% 34.226%,84.498% 32.887%,86.17% 31.13%,86.702% 29.54%,86.778% 28.033%,85.714% 22.008%,84.802% 18.912%)"><img class="o g" src="/assets/bf/olhos/g-esq.webp" alt="" style="left:53.419%;top:22.51%;width:15.274%;height:11.715%"><img class="o g" src="/assets/bf/olhos/g-dir.webp" alt="" style="left:71.277%;top:15.314%;width:14.21%;height:14.393%"><img class="o boca g" src="/assets/bf/olhos/g-boca.webp" alt="" style="left:65.198%;top:28.033%;width:11.474%;height:9.456%"></div><span class="bolha" style="left:-2%;top:0">
+<b>20%</b><span>de desconto no curso<br>no Acertou, Ganhou!</span></span>
+<span class="bolha d" style="right:-3%;top:50%" data-p="25"><b><small>até</small>25%</b><span>na loja · PIX ou débito</span></span>
+<span class="bolha up" style="left:-3%;top:76%" data-p="150"><b>R$ 150</b><span>em produtos da loja<br>por indicação</span></span>
+<span class="bolha d up" style="right:-3%;top:77%" data-p="10"><b><small>até</small>10%</b><span>no crédito<br>em até 3x sem juros</span></span></div></div></div>
   </div>
 </section>
 
