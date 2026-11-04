@@ -360,6 +360,15 @@ footer img{margin-left:auto;margin-right:auto}
 .on-wh details p{color:#52525b}
 .on-wh summary::after{color:#E5560A}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+
+/* mobile: cards em carrossel horizontal + sem pan lateral */
+html{overflow-x:hidden;overscroll-behavior-x:none}
+body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
+@media(max-width:759px){
+  .passos,.pq{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:30px -20px 0;padding:4px 20px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+  .passos::-webkit-scrollbar,.pq::-webkit-scrollbar{display:none}
+  .passos>.pa,.pq>div{flex:0 0 78%;scroll-snap-align:center}
+}
 </style>
 </head>
 <body>
