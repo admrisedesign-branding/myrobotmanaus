@@ -9,6 +9,14 @@
       "destination": "/privacidade.html"
     },
     {
+      "source": "/blackfriday",
+      "destination": "/blackfriday.html"
+    },
+    {
+      "source": "/black-friday",
+      "destination": "/blackfriday.html"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
