@@ -178,7 +178,11 @@ export default async function handler(req, res) {
     const { fields: utmF, isAd } = utmFields(b.utm);
     const origTxt = String(b.orig || "");
     const veioDeAnuncio = isAd || /an[uú]ncio/i.test(origTxt);
-    const baseTags = ["site", cat, ...(veioDeAnuncio ? [AD_TAG] : [])];
+    // Tags de campanha vindas do formulário (ex.: "black-friday"); saneadas e limitadas.
+    const tagsCampanha = (Array.isArray(b.tags) ? b.tags : [])
+      .map((t) => String(t || "").toLowerCase().trim().replace(/[^a-z0-9\u00e0-\u00ff -]/g, "").replace(/\s+/g, "-").slice(0, 40))
+      .filter(Boolean).slice(0, 5);
+    const baseTags = [...new Set(["site", cat, ...(veioDeAnuncio ? [AD_TAG] : []), ...tagsCampanha])];
 
     const leadFields = [
       ...utmF,
@@ -329,6 +333,7 @@ function enviarAoCapta(b, kommoLeadId) {
       temperatura: cat,
       notas,
     },
+    tags: Array.isArray(b.tags) ? b.tags.slice(0, 5) : undefined,   // tag de campanha (ex.: black-friday) → aparece no Capta
     respostas: b.respostas || undefined,
     utm: (b.utm && typeof b.utm === 'object') ? b.utm : undefined,   // campanha/grupo do anúncio → rastreio no Capta
   };
