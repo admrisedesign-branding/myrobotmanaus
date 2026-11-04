@@ -100,7 +100,7 @@ a{color:inherit}
 .proof{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:18px;font-size:13px;color:var(--mut)}
 .proof span{display:inline-flex;align-items:center;gap:7px}
 .proof span::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange)}
-.robos{position:relative;display:flex;justify-content:center;align-items:flex-end;margin:14px 0 0;height:min(66vw,300px)}
+.robos{position:relative;display:flex;justify-content:center;align-items:flex-end;margin:14px 0 0;height:min(86vw,400px)}
 .robos img{height:100%;width:auto;display:block;filter:drop-shadow(0 0 40px rgba(255,106,26,.28))}
 
 /* seções */
@@ -202,7 +202,7 @@ footer p{margin-top:4px}
   .hero .wrap{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;align-items:center}
   .cta-row{flex-direction:row;align-items:center}
   .cta-row .btn{white-space:nowrap}
-  .robos{height:440px;margin:0}
+  .robos{height:500px;margin:0}
   .vc{display:inline-flex}
   .ofertas{display:grid;grid-template-columns:repeat(4,1fr);overflow:visible;margin:36px 0 0;padding:0}
   .of{flex:none}
@@ -214,6 +214,21 @@ footer p{margin-top:4px}
   .sticky{display:none}
   footer{padding-bottom:50px}
 }
+
+/* tudo centralizado, exceto o hero */
+section:not(.hero) .wrap{text-align:center}
+section:not(.hero) .sub,.priv{margin-left:auto;margin-right:auto}
+.fine{margin-left:auto;margin-right:auto}
+.of ul{justify-items:start;width:fit-content;margin:12px auto 0}
+.of li{text-align:left}
+.pa{flex-direction:column;align-items:center;text-align:center}
+.pq div{padding:18px 0 0;border-left:0;border-top:2px solid var(--orange);max-width:340px;margin:0 auto}
+.form{margin-left:auto;margin-right:auto;text-align:left}
+.passo h3,.passo .s,.ok{text-align:center}
+.priv{text-align:center}
+details{text-align:left}
+footer .wrap{text-align:center}
+footer img{margin-left:auto;margin-right:auto}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -239,7 +254,7 @@ footer p{margin-top:4px}
       </div>
       <div class="proof"><span>Robótica, programação e IA</span><span>A partir de 5 anos</span><span>Turmas pequenas</span></div>
     </div>
-    <div class="robos" aria-hidden="true"><img src="/assets/bf/robos.webp" alt="" width="724" height="594" fetchpriority="high"></div>
+    <div class="robos" aria-hidden="true"><img src="/assets/bf/robos.webp" alt="" width="724" height="645" fetchpriority="high"></div>
   </div>
 </section>
 
@@ -370,7 +385,7 @@ footer p{margin-top:4px}
   <div class="wrap">
     <div class="eyebrow">Dúvidas frequentes</div>
     <h2>Antes de agendar.</h2>
-    <div style="margin-top:22px;max-width:760px">
+    <div style="margin:22px auto 0;max-width:760px">
       <details><summary>Para quais idades?</summary><p>Atendemos a partir de 5 anos, com trilhas pensadas para cada faixa etária.</p></details>
       <details><summary>Como é a aula experimental?</summary><p>Seu filho participa de uma aula prática com um instrutor, conhece os kits e vive a robótica na prática. Depois da aula, a família conhece as condições de Black Friday.</p></details>
       <details><summary>Posso trazer um amigo ou irmão?</summary><p>Pode. Com o Black Pass, dois novos alunos que se matriculam em novembro têm a taxa de matrícula isenta.</p></details>
