@@ -261,6 +261,30 @@ section:not(.hero) .sub,.priv{margin-left:auto;margin-right:auto}
 details{text-align:left}
 footer .wrap{text-align:center}
 footer img{margin-left:auto;margin-right:auto}
+
+/* alternância de cores: preto (hero) → laranja → branco → preto → laranja → branco → preto */
+.on-or{background:var(--orange)!important;border:0!important;color:#140800}
+.on-or .eyebrow{color:#140800;opacity:.72}
+.on-or h2{color:#0B0B0C}
+.on-or .sub{color:rgba(20,8,0,.8)}
+.on-or .fine,.on-or .priv{color:rgba(20,8,0,.72)}
+.on-or .priv a{color:#140800}
+.on-or .of,.on-or .form{color:#fff}
+.on-or .of h3,.on-or .form h3{color:#fff}
+.on-or .of p{color:#b4b4bd}.on-or .of p b{color:#fff}
+.on-or .of{background:#0F0F10;border-color:#0F0F10;box-shadow:0 18px 40px -22px rgba(0,0,0,.6)}
+.on-or .form{background:#0F0F10;border-color:#0F0F10;box-shadow:0 24px 50px -26px rgba(0,0,0,.65)}
+.on-wh{background:#fff!important;border:0!important;color:#0B0B0C}
+.on-wh .eyebrow{color:#E5560A}
+.on-wh h2{color:#0B0B0C}
+.on-wh .sub{color:#52525b}
+.on-wh .pa{background:#F6F6F7;border-color:#E7E7EA}
+.on-wh .pa b{color:#0B0B0C}
+.on-wh .pa span{color:#52525b}
+.on-wh details{border-bottom-color:#E7E7EA}
+.on-wh summary{color:#0B0B0C}
+.on-wh details p{color:#52525b}
+.on-wh summary::after{color:#E5560A}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -304,7 +328,7 @@ footer img{margin-left:auto;margin-right:auto}
   </div>
 </section>
 
-<section id="condicoes">
+<section id="condicoes" class="on-or">
   <div class="wrap">
     <div class="eyebrow">Condições de Black Friday</div>
     <h2>Quatro motivos para começar agora.</h2>
@@ -337,7 +361,7 @@ footer img{margin-left:auto;margin-right:auto}
   </div>
 </section>
 
-<section style="background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+<section class="on-wh">
   <div class="wrap">
     <div class="eyebrow">Como funciona</div>
     <h2>Em três passos simples.</h2>
@@ -361,7 +385,7 @@ footer img{margin-left:auto;margin-right:auto}
   </div>
 </section>
 
-<section id="agendar">
+<section id="agendar" class="on-or">
   <div class="wrap">
     <div class="eyebrow">Aula experimental exclusiva</div>
     <h2>Reserve o horário do seu filho.</h2>
@@ -427,7 +451,7 @@ footer img{margin-left:auto;margin-right:auto}
   </div>
 </section>
 
-<section>
+<section class="on-wh">
   <div class="wrap">
     <div class="eyebrow">Dúvidas frequentes</div>
     <h2>Antes de agendar.</h2>
