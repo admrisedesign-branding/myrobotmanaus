@@ -372,6 +372,16 @@ section.alt{background:#111113;border-top:1px solid var(--line);border-bottom:1p
 .depo .au b{color:#fff}
 .depo .au span{color:var(--mut)}
 .gsel{background:#17171A;border-color:#2a2a2f;color:#fff;box-shadow:none}
+
+/* mobile: mais respiro ao redor dos robôs */
+@media(max-width:759px){
+  .robos{min-height:400px;margin-top:18px;padding-bottom:10px}
+  .stage{height:min(92%,calc(100cqw * .74));top:52%}
+  .bolha{font-size:clamp(10.5px,2.9vw,15px)}
+  .bolha[data-p="25"]{top:47%!important;right:-6%!important}
+  .bolha[data-p="150"]{top:70%!important;left:-6%!important}
+  .bolha[data-p="10"]{top:72%!important;right:-6%!important}
+}
 /* mobile: cards em carrossel horizontal + sem pan lateral */
 html{overflow-x:hidden;overscroll-behavior-x:none}
 body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
