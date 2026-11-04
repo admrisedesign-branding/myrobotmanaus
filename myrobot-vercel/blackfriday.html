@@ -280,18 +280,24 @@ footer img{margin-left:auto;margin-right:auto}
 .stat span{display:block;margin-top:6px;font-size:14px;color:var(--mut)}
 .depos{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:34px -20px 0;padding:4px 20px 14px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .depos::-webkit-scrollbar{display:none}
-.depo{flex:0 0 86%;scroll-snap-align:center;background:#17171A;border:1px solid var(--line);border-radius:var(--r);padding:22px 20px;text-align:left}
+.depo{flex:0 0 86%;scroll-snap-align:center;background:#fff;border:1px solid #e8e4df;border-radius:var(--r);padding:22px 20px;text-align:left;display:flex;flex-direction:column;box-shadow:0 6px 20px rgba(20,10,0,.06)}
 .depo .st{color:var(--orange);letter-spacing:2px;font-size:15px;margin-bottom:10px}
-.depo p{color:#e6e6ea;font-size:15.5px;line-height:1.6}
-.depo .au{display:flex;align-items:center;gap:12px;margin-top:16px}
-.depo .av{width:40px;height:40px;border-radius:50%;background:rgba(255,106,26,.16);color:var(--orange);display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto}
+.depo p{color:#2b2b30;font-size:15.5px;line-height:1.6;flex:1}
+.depo .au{display:flex;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid #eee9e3}
+.depo .av{width:40px;height:40px;border-radius:50%;background:rgba(255,106,26,.14);color:var(--orange);display:grid;place-items:center;font-weight:800;font-size:14px;flex:0 0 auto}
 .depo .au b{display:block;font-size:14.5px}
-.depo .au span{font-size:13px;color:var(--mut)}
-.fotos{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;margin:26px -20px 0;padding:4px 20px 10px;scrollbar-width:none}
-.fotos::-webkit-scrollbar{display:none}
-.fotos figure{flex:0 0 auto;scroll-snap-align:center;position:relative}
-.fotos img{display:block;height:min(66vw,340px);width:auto;border-radius:18px;border:1px solid var(--line)}
-.fotos figcaption{position:absolute;left:10px;bottom:10px;background:rgba(11,11,12,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px}
+.depo .au span{font-size:13px;color:#6b6b72;line-height:1.35}
+.depo .au b{color:#111}
+.galeria{margin-top:30px;display:grid;gap:12px}
+.galeria figure{position:relative;margin:0;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#141416}
+.galeria img{display:block;width:100%;height:100%;object-fit:cover}
+.g-wide{aspect-ratio:16/10}
+.g-row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g-row figure{aspect-ratio:3/4;border-radius:14px}
+.galeria figcaption{position:absolute;left:10px;bottom:10px;background:rgba(11,11,12,.78);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);color:#fff;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px}
+.gsel{display:inline-flex;align-items:center;gap:8px;margin-top:18px;padding:9px 16px;border-radius:99px;background:#fff;border:1px solid #e8e4df;color:#111;font-size:14px;text-decoration:none;box-shadow:0 4px 14px rgba(20,10,0,.06)}
+.gsel .gs{color:#f5a300;letter-spacing:1px}
+.gsel b{font-family:'Bricolage Grotesque',sans-serif;font-size:16px}
 .micro{margin-top:12px;text-align:center;font-size:13px;color:var(--mut)}
 .on-or .micro{color:#6b5446}
 .aviso{display:inline-block;margin-top:22px;background:#1A0B03;color:#fff;font-weight:600;font-size:14px;padding:10px 16px;border-radius:99px}
@@ -303,8 +309,9 @@ footer img{margin-left:auto;margin-right:auto}
   .stats{grid-template-columns:repeat(4,1fr)}
   .depos{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;margin:36px 0 0;padding:0}
   .depo{flex:none}
-  .fotos{justify-content:center;overflow:visible;margin:30px 0 0;padding:0}
-  .fotos img{height:360px}
+  .galeria{gap:14px}
+  .g-wide{aspect-ratio:2/1}
+  .g-row{gap:14px}
 }
 /* alternância de cores: preto (hero) → laranja → branco → preto → laranja → branco → preto */
 .on-or{background:linear-gradient(165deg,#FF7C33 0%,#F5650F 100%)!important;border:0!important;color:#2A1305}
@@ -449,22 +456,33 @@ footer img{margin-left:auto;margin-right:auto}
   <div class="wrap">
     <div class="eyebrow">Por que My Robot</div>
     <h2>Aprender fazendo. De verdade.</h2>
-    <p class="sub">Famílias de Manaus já escolheram. Veja o que dizem.</p>
+    <p class="sub">Robótica, programação e IA na prática, em uma unidade pensada para crianças.</p>
     <div class="pq">
       <div><i>01</i><b>Mão na massa</b><span>Montar, programar e testar robôs reais, em vez de só assistir a uma aula.</span></div>
       <div><i>02</i><b>Trilhas por idade</b><span>Do primeiro contato com robótica até programação e inteligência artificial.</span></div>
       <div><i>03</i><b>Atenção de perto</b><span>Turmas pequenas, com instrutores acompanhando cada criança.</span></div>
     </div>
+    <div class="galeria">
+      <figure class="g-wide"><img src="/assets/bf/sala.webp" alt="Sala de robótica da My Robot Manaus com alunos e instrutores durante a aula" width="1400" height="788" loading="lazy"><figcaption>Sala de robótica · Manaus</figcaption></figure>
+      <div class="g-row">
+        <figure><img src="/assets/bf/f1.webp" alt="Aluna montando um robô com engrenagens" width="760" height="1013" loading="lazy"></figure>
+        <figure><img src="/assets/bf/f2.webp" alt="Aluno programando o robô no notebook" width="760" height="1013" loading="lazy"></figure>
+        <figure><img src="/assets/bf/f3.webp" alt="Alunos escolhendo as peças do kit de robótica" width="760" height="1013" loading="lazy"></figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="on-wh">
+  <div class="wrap">
+    <div class="eyebrow">Quem já vive isso</div>
+    <h2>O que as famílias dizem.</h2>
+    <a class="gsel" href="https://www.google.com/maps/search/My+Robot+Manaus+Adrian%C3%B3polis" target="_blank" rel="noopener"><span class="gs">★★★★★</span><b>5,0</b> no Google · 50 avaliações</a>
     <div class="depos">
       <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Amamos a My Robot! Nosso filho é sempre muito bem acolhido e estimulado a criar e desenvolver suas habilidades. O cuidado, acompanhamento e comprometimento de toda a equipe nos dá a certeza de que fizemos a melhor escolha.”</p><div class="au"><div class="av">BB</div><div><b>Bruno Baranda</b><span>Pai de aluno da My Robot Manaus</span></div></div></article>
       <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Em pouco tempo meu filho Martin, de 4 anos, já demonstra crescimento surpreendente na concentração e na forma como resolve problemas. As aulas são dinâmicas e pensadas para despertar o interesse desde cedo.”</p><div class="au"><div class="av">NS</div><div><b>Neyla Souza</b><span>Mãe do Martin, 4 anos</span></div></div></article>
-      <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Simplesmente a melhor experiência educacional que já presenciei! O ambiente é moderno, os professores são apaixonados e a metodologia traduz conceitos complexos de forma lúdica.”</p><div class="au"><div class="av">KL</div><div><b>Katia Lopes</b><span>Responsável de aluno da My Robot Manaus</span></div></div></article>
+      <article class="depo"><div class="st" aria-label="5 estrelas">★★★★★</div><p>“Simplesmente a melhor experiência educacional que já presenciei! O ambiente é moderno, os professores são apaixonados e a metodologia traduz conceitos complexos de forma lúdica.”</p><div class="au"><div class="av">KL</div><div><b>Katia Lopes</b><span>Responsável de aluno</span></div></div></article>
     </div>
-    <div class="fotos">
-      <figure><img src="/assets/bf/unidade.webp" alt="Aluna recebendo certificado na unidade My Robot Manaus" width="760" height="1013" loading="lazy"><figcaption>Na unidade de Manaus</figcaption></figure>
-      <figure><img src="/assets/bf/aula.webp" alt="Crianças montando robôs durante a aula" width="900" height="506" loading="lazy"><figcaption>Aula prática</figcaption></figure>
-    </div>
-
   </div>
 </section>
 
