@@ -398,14 +398,43 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   .passos::-webkit-scrollbar,.pq::-webkit-scrollbar{display:none}
   .passos>.pa,.pq>div{flex:0 0 78%;scroll-snap-align:center}
 }
+
+/* faixa superior + contagem */
+:root{--topo-h:94px}
+.faixa{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;background:var(--orange);color:#111;font-weight:800;font-size:12px;letter-spacing:.06em;text-transform:uppercase;padding:8px 10px;line-height:1}
+.faixa i{font-style:normal;background:#111;color:#fff;border-radius:7px;padding:5px 8px}
+.faixa span{font-weight:800}
+@media(max-width:380px){.faixa{font-size:11px;gap:7px;letter-spacing:.04em}.faixa i{padding:4px 6px}}
+@media(min-width:760px){.faixa{font-size:13px;padding:9px 10px}}
+.hero{min-height:calc(100vh - var(--topo-h));min-height:calc(100svh - var(--topo-h))}
+.contagem{background:#0E0E10;border-bottom:1px solid var(--line);padding:30px 0 34px}
+.contagem .wrap{text-align:center}
+.ct-tit{font-size:12.5px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#d4d4da}
+.ct-box{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:520px;margin:16px auto 20px}
+.ct-box div{background:#17171A;border:1px solid rgba(255,106,26,.35);border-radius:14px;padding:14px 4px 11px}
+.ct-box b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:clamp(30px,9vw,44px);line-height:1;color:var(--orange);font-variant-numeric:tabular-nums}
+.ct-box span{display:block;margin-top:6px;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut)}
+.contagem .btn{width:100%;max-width:520px}
+@media(max-width:759px){
+  /* robôs logo abaixo da frase principal */
+  .hero>.wrap>div:first-child{display:contents}
+  .hero .bflogo{order:1}
+  .hero h1{order:2;margin-bottom:6px}
+  .hero>.wrap>.robos{order:3;margin-top:4px}
+  .hero p.lead{order:4;margin-top:6px}
+  .hero .cta-row{order:5}
+  .hero .proof{order:6}
+  .top .btn-sm{font-size:13px;padding:0 14px}
+}
 </style>
 </head>
 <body>
 
 <header class="top">
+  <div class="faixa" id="faixa"><b>Black Friday</b><i>até 25% na loja</i><span id="faixa-fim">termina 30/11</span></div>
   <div class="wrap">
     <img src="/assets/logo-nav.png" alt="My Robot" width="102" height="26">
-    <a class="btn btn-or btn-sm" href="#agendar">Agendar aula</a>
+    <a class="btn btn-or btn-sm" href="#agendar" data-cta="topo">Quero Black agora</a>
   </div>
 </header>
 
@@ -427,7 +456,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
       <h1>O futuro do seu filho começa com uma <em>grande descoberta.</em></h1>
       <p class="lead">Agende uma aula experimental exclusiva e conheça as condições especiais de Black Friday para novas matrículas.</p>
       <div class="cta-row">
-        <a class="btn btn-or" href="#agendar" data-cta="hero">Quero agendar a aula experimental</a>
+        <a class="btn btn-or" href="#agendar" data-cta="hero">Quero Black agora</a>
         <a class="btn btn-ghost vc" href="#condicoes">Ver as condições</a>
       </div>
       <div class="proof"><span class="gnota">★ 5,0 no Google · 50 avaliações</span><span>Robótica, programação e IA</span><span>A partir de 5 anos</span><span>Turmas pequenas</span></div>
@@ -446,6 +475,16 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
     <div class="dd"><b>12+</b><span>cursos disponíveis</span></div>
     <div class="dd"><b>97%</b><span>de satisfação dos pais</span></div>
     <div class="dd"><b>8+</b><span>anos de inovação</span></div>
+  </div>
+</section>
+
+<section class="contagem" id="contagem" aria-label="Tempo restante da campanha">
+  <div class="wrap">
+    <div class="ct-tit">A Black Friday termina em</div>
+    <div class="ct-box" role="timer" aria-live="off">
+      <div><b id="ct-d">00</b><span>dias</span></div><div><b id="ct-h">00</b><span>horas</span></div><div><b id="ct-m">00</b><span>min</span></div><div><b id="ct-s">00</b><span>seg</span></div>
+    </div>
+    <a class="btn btn-or" href="#agendar" data-cta="contagem">Quero Black agora</a>
   </div>
 </section>
 
@@ -608,7 +647,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
       <details><summary>Posso trazer um amigo ou irmão?</summary><p>Pode. Com o Black Pass, dois novos alunos que se matriculam em novembro têm a taxa de matrícula isenta.</p></details>
       <details><summary>Onde fica a unidade?</summary><p>Av. Umberto Calderaro, 625, Adrianópolis, Manaus. Fale com a gente pelo WhatsApp para combinar o melhor horário.</p></details>
     </div>
-    <div style="margin-top:28px"><a class="btn btn-or" href="#agendar" data-cta="faq">Quero agendar a aula experimental</a></div>
+    <div style="margin-top:28px"><a class="btn btn-or" href="#agendar" data-cta="faq">Quero Black agora</a></div>
   </div>
 </section>
 </main>
@@ -623,7 +662,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </footer>
 
-<div class="sticky" id="sticky"><a class="btn btn-or" href="#agendar" data-cta="sticky">Agendar aula experimental</a></div>
+<div class="sticky" id="sticky"><a class="btn btn-or" href="#agendar" data-cta="sticky">Quero Black agora</a></div>
 
 <script>
 (function(){
@@ -746,6 +785,21 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
     fetch('/api/kommo-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})
       .then(uma).catch(function(e){ console.warn('Envio falhou, segue pelo WhatsApp:',e); uma(); });
   });
+})();
+
+// contagem regressiva até o fim de novembro (horário de Manaus, UTC-4) — troque FIM se a campanha mudar
+(function(){
+  const FIM = new Date('2026-12-01T00:00:00-04:00').getTime();
+  const sec = document.getElementById('contagem'), faixaFim = document.getElementById('faixa-fim');
+  if (!sec) return;
+  const z = n => String(n).padStart(2,'0'), $ = id => document.getElementById(id);
+  function tick(){
+    const d = FIM - Date.now();
+    if (d <= 0) { sec.style.display = 'none'; if (faixaFim) faixaFim.textContent = 'últimas condições'; clearInterval(t); return; }
+    $('ct-d').textContent = z(Math.floor(d/864e5)); $('ct-h').textContent = z(Math.floor(d/36e5)%24);
+    $('ct-m').textContent = z(Math.floor(d/6e4)%60); $('ct-s').textContent = z(Math.floor(d/1e3)%60);
+  }
+  const t = setInterval(tick, 1000); tick();
 })();
 </script>
 </body>
