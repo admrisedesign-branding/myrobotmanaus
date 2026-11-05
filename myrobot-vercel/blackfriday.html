@@ -681,12 +681,12 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   var $=function(s,r){return (r||document).querySelector(s)}, $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s))};
   var etapa=1, enviado=false;
 
-  /* barra fixa: aparece depois do herói e some quando o formulário está na tela */
+  /* barra fixa (celular): visível desde o topo; só some quando o formulário está na tela */
   var st=$('#sticky'), hero=$('.hero'), form=$('#agendar');
   function vis(){
     var h=hero.getBoundingClientRect().bottom, f=form.getBoundingClientRect();
     var noForm=f.top<window.innerHeight*0.8 && f.bottom>0;
-    st.classList.toggle('on', h<0 && !noForm);
+    st.classList.toggle('on', !noForm);
   }
   window.addEventListener('scroll',vis,{passive:true}); vis();
 
