@@ -438,6 +438,19 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   .hero>.wrap>.robos{flex:none;min-height:0;height:auto;aspect-ratio:1/.8;margin-top:8px}
   .hero .stage{top:50%}
 }
+
+/* contagem em destaque */
+.contagem{background:radial-gradient(120% 90% at 50% 0%,rgba(255,106,26,.28),transparent 60%),linear-gradient(180deg,#1d0c04,#0E0E10);border-top:1px solid rgba(255,106,26,.55);border-bottom:1px solid rgba(255,106,26,.55);padding:34px 0 38px}
+.ct-pill{display:inline-block;background:var(--orange);color:#111;font-weight:800;font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;padding:6px 12px;border-radius:99px;margin-bottom:12px}
+.contagem .ct-tit{font-family:'Bricolage Grotesque',sans-serif;font-size:clamp(22px,6.4vw,32px);font-weight:800;letter-spacing:-.01em;text-transform:none;color:#fff}
+.ct-box{gap:10px;max-width:560px;margin:18px auto 12px}
+.ct-box div{background:linear-gradient(180deg,#2a1307,#17171A);border:1.5px solid rgba(255,138,69,.8);box-shadow:0 0 26px -4px rgba(255,106,26,.45);padding:16px 4px 12px}
+.ct-box b{font-size:clamp(36px,11.5vw,58px);text-shadow:0 0 18px rgba(255,106,26,.55)}
+.ct-box .seg b{animation:segpulse 1s ease-in-out infinite}
+@keyframes segpulse{0%,100%{opacity:1}50%{opacity:.72}}
+@media(prefers-reduced-motion:reduce){.ct-box .seg b{animation:none}}
+.ct-sub{font-size:13px;color:#d4d4da;margin-bottom:18px}
+.contagem .btn{max-width:560px;min-height:58px;font-size:17px;box-shadow:0 10px 30px -8px rgba(255,106,26,.7)}
 </style>
 </head>
 <body>
@@ -481,22 +494,24 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
   </div>
 </section>
 
+<section class="contagem" id="contagem" aria-label="Tempo restante da campanha">
+  <div class="wrap">
+    <span class="ct-pill">Oferta por tempo limitado</span>
+    <div class="ct-tit">A Black Friday termina em</div>
+    <div class="ct-box" role="timer" aria-live="off">
+      <div><b id="ct-d">00</b><span>dias</span></div><div><b id="ct-h">00</b><span>horas</span></div><div><b id="ct-m">00</b><span>min</span></div><div class="seg"><b id="ct-s">00</b><span>seg</span></div>
+    </div>
+    <div class="ct-sub">Até 30/11, às 23h59 (horário de Manaus)</div>
+    <a class="btn btn-or" href="#agendar" data-cta="contagem">Quero Black agora</a>
+  </div>
+</section>
+
 <section class="dados" aria-label="Números da My Robot">
   <div class="wrap">
     <div class="dd"><b>500+</b><span>alunos formados</span></div>
     <div class="dd"><b>12+</b><span>cursos disponíveis</span></div>
     <div class="dd"><b>97%</b><span>de satisfação dos pais</span></div>
     <div class="dd"><b>8+</b><span>anos de inovação</span></div>
-  </div>
-</section>
-
-<section class="contagem" id="contagem" aria-label="Tempo restante da campanha">
-  <div class="wrap">
-    <div class="ct-tit">A Black Friday termina em</div>
-    <div class="ct-box" role="timer" aria-live="off">
-      <div><b id="ct-d">00</b><span>dias</span></div><div><b id="ct-h">00</b><span>horas</span></div><div><b id="ct-m">00</b><span>min</span></div><div><b id="ct-s">00</b><span>seg</span></div>
-    </div>
-    <a class="btn btn-or" href="#agendar" data-cta="contagem">Quero Black agora</a>
   </div>
 </section>
 
