@@ -3332,6 +3332,10 @@ function submitForm() {
       score,
       categoria: lead.l,
       utm: window.MR_UTM||{},
+      // de onde o lead veio: este é o site principal. A landing da Black
+      // Friday manda a dela, e o /api/lead acrescenta "anuncio" quando a UTM
+      // diz que a pessoa chegou por anúncio pago.
+      tags: ['site-principal'],
       // LGPD: o aceite vai junto; o /api/lead repassa pro Capta (api/capta-ingest)
       consentimento: {
         contato: true,

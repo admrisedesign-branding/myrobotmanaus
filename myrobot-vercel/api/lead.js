@@ -7,6 +7,25 @@
 //
 // Variáveis: CAPTA_URL (opcional) · CAPTA_SLUG · CAPTA_TOKEN
 
+// De onde o lead veio, em etiqueta.
+//
+// Cada página manda a sua ("site-principal", "site-blackfriday") e aqui entra
+// "anuncio" quando a UTM diz que a pessoa chegou por anúncio pago. A regra
+// fica no servidor, e não nas duas páginas, para as duas contarem igual.
+//
+// Pago é: clique identificado do Facebook ou do Google (fbclid/gclid), ou
+// utm_medium de mídia paga. Chegar por link do Instagram ou por busca
+// orgânica NÃO é anúncio — nesses casos o MR_UTM grava medium "referral" ou
+// "organic", e a etiqueta não entra.
+function etiquetas(b) {
+  const fora = Array.isArray(b.tags) ? b.tags.filter(Boolean).map(String) : [];
+  const u = (b.utm && typeof b.utm === "object") ? b.utm : {};
+  const meio = String(u.utm_medium || "").toLowerCase();
+  const pago = !!(u.fbclid || u.gclid) || /^(cpc|ppc|paid|paidsocial|paid_social|cpm|display)$/.test(meio);
+  if (pago) fora.push("anuncio");
+  return fora.length ? [...new Set(fora)].slice(0, 5) : undefined;
+}
+
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
@@ -66,7 +85,7 @@ function enviarAoCapta(b) {
       temperatura: cat,
       notas,
     },
-    tags: Array.isArray(b.tags) ? b.tags.slice(0, 5) : undefined,   // tag de campanha (ex.: black-friday) → aparece no Capta
+    tags: etiquetas(b),
     respostas: b.respostas || undefined,
     utm: (b.utm && typeof b.utm === 'object') ? b.utm : undefined,   // campanha/grupo do anúncio → rastreio no Capta
   };
