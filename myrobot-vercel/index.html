@@ -3317,7 +3317,7 @@ function submitForm() {
   try{ if(typeof gtag!=='undefined'){ gtag('event','generate_lead',{event_category:'formulario',event_label:'site'}); } }catch(e){}
 
   // Cria o lead na Kommo (não trava a abertura do WhatsApp)
-  fetch('/api/kommo-lead', {
+  fetch('/api/lead', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -3332,7 +3332,7 @@ function submitForm() {
       score,
       categoria: lead.l,
       utm: window.MR_UTM||{},
-      // LGPD: o aceite vai junto; o kommo-lead repassa pro Capta (api/capta-consent)
+      // LGPD: o aceite vai junto; o /api/lead repassa pro Capta (api/capta-ingest)
       consentimento: {
         contato: true,
         dados_crianca: true,
