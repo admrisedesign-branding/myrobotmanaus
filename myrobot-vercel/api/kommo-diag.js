@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     } catch (e) { return res.status(200).json({ acao: "desinstalar", erro: String(e && e.message) }); }
   }
 
-  const conta   = await ler("/account");
+  const conta   = await ler("/account?with=subscription,amojo_id");
   const wid     = await ler("/widgets/amocrm_whatsapp");
   const pipes   = await ler("/leads/pipelines");
   const fontes  = await ler("/sources?limit=250");
@@ -57,7 +57,9 @@ export default async function handler(req, res) {
   const interessantes = ativos;
 
   return res.status(200).json({
-    conta: { status: conta.status, nome: conta.dados && conta.dados.name, id: conta.dados && conta.dados.id },
+    conta: { status: conta.status, nome: conta.dados && conta.dados.name, id: conta.dados && conta.dados.id,
+             assinatura: conta.dados && conta.dados.subscription,
+             chaves: conta.dados ? Object.keys(conta.dados) : [] },
     widgets: {
       status: widgets.status,
       total: lista.length,
