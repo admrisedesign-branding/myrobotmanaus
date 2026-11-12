@@ -31,10 +31,10 @@ export default async function handler(req, res) {
   const canais  = await ler("/chats/templates?limit=1");   // existe? diz se a API de chat responde
 
   const lista = (widgets.dados && widgets.dados._embedded && widgets.dados._embedded.widgets) || [];
-  const interessantes = lista.filter((w) =>
-    /whats|chat|bot|zap|telefon|wazzup|twilio/i.test(JSON.stringify(w.code || "") + (w.name || "")));
-  const porStatus = {};
-  lista.forEach((w) => { const k = String(w.status || "?"); porStatus[k] = (porStatus[k] || 0) + 1; });
+  // o que vale é is_active_in_account: os 233 são o catálogo inteiro
+  const ativos = lista.filter((w) => w.is_active_in_account === true);
+  const porStatus = { ativos_na_conta: ativos.length, catalogo: lista.length };
+  const interessantes = ativos;
 
   return res.status(200).json({
     conta: { status: conta.status, nome: conta.dados && conta.dados.name, id: conta.dados && conta.dados.id },
@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       total: lista.length,
       porStatus,
       camposDoPrimeiro: lista[0] ? Object.keys(lista[0]) : [],
-      candidatos: interessantes.map((w) => ({ code: w.code, status: w.status, nome: typeof w.name === "string" ? w.name : undefined })).slice(0, 25),
+      ativos: interessantes.map((w) => ({ code: w.code, id: w.id, fonteDeLead: !!w.is_lead_source, pipeline: w.pipeline_id })).slice(0, 40),
     },
     api_de_chat: { status: canais.status },
   });
