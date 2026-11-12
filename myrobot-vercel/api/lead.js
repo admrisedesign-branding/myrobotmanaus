@@ -29,13 +29,17 @@ function etiquetas(b) {
 export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
   try {
-    // sem await de propósito: quem preencheu não espera o Capta responder para
-    // receber o botão do WhatsApp
-    enviarAoCapta(req.body || {});
-    return res.status(200).json({ ok: true, destino: "capta" });
+    // COM await, e isso importa. O código antigo disparava e seguia sem
+    // esperar, mas logo depois fazia várias idas ao Kommo — e era esse tempo
+    // que mantinha a função viva até o envio ao Capta sair. Tirado o Kommo, a
+    // resposta volta na hora, a Vercel congela a função e o fetch pendente
+    // morre antes de chegar: o lead sumia sem erro nenhum.
+    const ok = await enviarAoCapta(req.body || {});
+    return res.status(200).json({ ok, destino: "capta" });
   } catch (err) {
     console.error("Falha ao receber o lead:", err);
-    return res.status(500).json({ error: String(err) });
+    // a pessoa não pode ficar sem o botão do WhatsApp por causa disto
+    return res.status(200).json({ ok: false });
   }
 }
 
@@ -45,13 +49,13 @@ export default async function handler(req, res) {
 // lá pelo espelho do Kommo — e em 18/set/2026 o Kommo bloqueou o IP da Vercel
 // (403), deixando o Capta cego para o que entrava pelo site. Mandar direto
 // tira essa dependência: se o Kommo cair, a operação continua.
-function enviarAoCapta(b) {
+async function enviarAoCapta(b) {
   const base  = process.env.CAPTA_URL  || "https://capta.riseagencia.com";
   const slug  = process.env.CAPTA_SLUG || "my-robot-manaus";
   const token = process.env.CAPTA_TOKEN;
-  if (!token) return;
+  if (!token) { console.warn("CAPTA_TOKEN ausente: lead nao foi gravado"); return false; }
   const fone = String(b.wn || "").replace(/\D/g, "");
-  if (!fone) return;
+  if (!fone) { console.warn("lead sem telefone: nao da para gravar"); return false; }
 
   const c = b && b.consentimento;
   // Resumo no mesmo formato do bot do WhatsApp, para o atendente ver o mesmo perfil de qualquer porta.
@@ -98,9 +102,15 @@ function enviarAoCapta(b) {
       url: c.url || null,
     };
   }
-  // sem await de propósito: o lead não pode esperar o Capta
-  fetch(`${base}/api/capta-ingest`, {
-    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
-  }).catch((e) => console.warn("Capta ingest falhou:", e && e.message));
+  try {
+    const r = await fetch(`${base}/api/capta-ingest`, {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
+    });
+    if (!r.ok) { console.error("Capta ingest:", r.status, await r.text().catch(() => "")); return false; }
+    return true;
+  } catch (e) {
+    console.error("Capta ingest falhou:", e && e.message);
+    return false;
+  }
 }
 
