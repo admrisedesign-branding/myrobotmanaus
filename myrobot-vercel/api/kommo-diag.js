@@ -30,6 +30,10 @@ export default async function handler(req, res) {
   const wid     = await ler("/widgets/amocrm_whatsapp");
   const pipes   = await ler("/leads/pipelines");
   const fontes  = await ler("/sources?limit=250");
+  const agora = Math.floor(Date.now() / 1000);
+  const d7  = await ler(`/leads?filter[pipeline_id]=13965588&filter[created_at][from]=${agora - 7 * 86400}&limit=1`);
+  const d30 = await ler(`/leads?filter[pipeline_id]=13965588&filter[created_at][from]=${agora - 30 * 86400}&limit=1`);
+  const ultimos = await ler("/leads?filter[pipeline_id]=13965588&order[updated_at]=desc&limit=3");
   const widgets = await ler("/widgets?limit=250");
   const canais  = await ler("/chats/templates?limit=1");   // existe? diz se a API de chat responde
 
@@ -60,6 +64,14 @@ export default async function handler(req, res) {
       status: pipes.status,
       lista: (((pipes.dados || {})._embedded || {}).pipelines || [])
         .map((p2) => ({ id: p2.id, nome: p2.name, principal: !!p2.is_main, arquivado: !!p2.is_archive })),
+    },
+    movimento_no_funil: {
+      criados_7d:  { status: d7.status,  total: d7.dados && d7.dados._page_count !== undefined ? undefined : undefined, bruto: d7.status === 204 ? 0 : ((((d7.dados||{})._embedded||{}).leads)||[]).length },
+      criados_30d: { status: d30.status, bruto: d30.status === 204 ? 0 : ((((d30.dados||{})._embedded||{}).leads)||[]).length },
+      mexidos_recentemente: ((((ultimos.dados||{})._embedded||{}).leads)||[]).map((l) => ({
+        id: l.id, nome: l.name,
+        criado: l.created_at ? new Date(l.created_at * 1000).toISOString().slice(0,10) : null,
+        mexido: l.updated_at ? new Date(l.updated_at * 1000).toISOString().slice(0,10) : null })),
     },
     fontes_de_lead: {
       status: fontes.status,
