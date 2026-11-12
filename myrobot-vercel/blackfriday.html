@@ -808,7 +808,9 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
       rn:rn, wn:wn, em:'', fn:fn, fi:fi,
       area:area||'Ainda não definido', mom:momL, obj:'', cont:'', trilha:trilha, bairro:'',
       orig:'Black Friday 2026', score:score, categoria:categoria,
-      tags:['black-friday'], campanha:'black-friday-2026',
+      /* de onde o lead veio; o /api/lead acrescenta "anuncio" quando a UTM diz
+         que chegou por anuncio pago */
+      tags:['site-blackfriday'], campanha:'black-friday-2026',
       utm:utm,
       consentimento:{
         contato:true, dados_crianca:true, marketing:$('#c2').checked, responsavel:true,
