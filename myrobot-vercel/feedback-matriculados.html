@@ -6,7 +6,7 @@
 <title>My Robot Manaus — Sua opinião</title>
 <!--
   Formulário de feedback dos matriculados — My Robot Manaus.
-  Salva DIRETO no CRM Kommo via /api/kommo-feedback (sem Supabase).
+  Grava a resposta no Capta via /api/feedback (vira linha de pesquisa, com NPS).
   O telefone e o id do lead vêm escondidos no link: ?wn=55XXXXXXXXXXX&id=NNN
 -->
 <style>
@@ -133,7 +133,7 @@
 <script>
   // ===== CONFIG =====
   const GOOGLE_REVIEW_URL = "https://search.google.com/local/writereview?placeid=ChIJJ1dXOUkbbJIRxH1t32yeU2g";
-  const ENDPOINT = "/api/kommo-feedback"; // salva direto no CRM Kommo
+  const ENDPOINT = "/api/feedback"; // grava a resposta no Capta
   // ==================
 
   // captura dados escondidos do link: ?wn=559299999999 (telefone) e ?id=NNN (id do lead no CRM, opcional)
@@ -179,7 +179,7 @@
     };
 
     try{
-      // salva direto no CRM Kommo
+      // grava a resposta no Capta
       await fetch(ENDPOINT, {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
