@@ -732,8 +732,16 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
 
   /* máscara do WhatsApp */
   $('#wn').addEventListener('input',function(){
-    var v=this.value.replace(/\D/g,'').slice(0,11);
-    if(v.length<=2) v=v?'('+v:''; else if(v.length<=7) v='('+v.slice(0,2)+') '+v.slice(2); else v='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
+    var d=this.value.replace(/\D/g,'');
+    /* Quem digita ou cola com o DDI (+55 92 98637-2410) estourava os 11
+       dígitos da máscara e perdia os DOIS ÚLTIMOS números. O Capta então via
+       11 dígitos, lia como número local e colava outro 55 na frente:
+       5592986372410 virava 5555929863724, que não casa com o WhatsApp de
+       ninguém. O 55 da frente sai antes de formatar. Quem é do DDD 55, do Rio
+       Grande do Sul, digita 11 dígitos e não entra nesta regra. */
+    if(d.length>11 && d.slice(0,2)==='55') d=d.slice(2);
+    var v=d.slice(0,11);
+    if(v.length<=2) v=v?'('+v:''; else if(v.length<=7) v='('+v.slice(0,2)+') '+v.slice(2); else v='('+v.slice(0,2)+') '+(v.length>10?v.slice(2,7)+'-'+v.slice(7):v.slice(2,6)+'-'+v.slice(6));
     this.value=v;
   });
 
