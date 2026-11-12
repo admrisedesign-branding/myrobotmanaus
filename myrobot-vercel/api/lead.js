@@ -34,8 +34,8 @@ export default async function handler(req, res) {
     // que mantinha a função viva até o envio ao Capta sair. Tirado o Kommo, a
     // resposta volta na hora, a Vercel congela a função e o fetch pendente
     // morre antes de chegar: o lead sumia sem erro nenhum.
-    const ok = await enviarAoCapta(req.body || {});
-    return res.status(200).json({ ok, destino: "capta" });
+    const r = await enviarAoCapta(req.body || {});
+    return res.status(200).json({ ...r, destino: "capta" });
   } catch (err) {
     console.error("Falha ao receber o lead:", err);
     // a pessoa não pode ficar sem o botão do WhatsApp por causa disto
@@ -53,9 +53,9 @@ async function enviarAoCapta(b) {
   const base  = process.env.CAPTA_URL  || "https://capta.riseagencia.com";
   const slug  = process.env.CAPTA_SLUG || "my-robot-manaus";
   const token = process.env.CAPTA_TOKEN;
-  if (!token) { console.warn("CAPTA_TOKEN ausente: lead nao foi gravado"); return false; }
+  if (!token) { console.warn("CAPTA_TOKEN ausente"); return { ok: false, motivo: "sem token" }; }
   const fone = String(b.wn || "").replace(/\D/g, "");
-  if (!fone) { console.warn("lead sem telefone: nao da para gravar"); return false; }
+  if (!fone) { console.warn("lead sem telefone"); return { ok: false, motivo: "sem telefone" }; }
 
   const c = b && b.consentimento;
   // Resumo no mesmo formato do bot do WhatsApp, para o atendente ver o mesmo perfil de qualquer porta.
@@ -106,11 +106,12 @@ async function enviarAoCapta(b) {
     const r = await fetch(`${base}/api/capta-ingest`, {
       method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(corpo),
     });
-    if (!r.ok) { console.error("Capta ingest:", r.status, await r.text().catch(() => "")); return false; }
-    return true;
+    const txt = await r.text().catch(() => "");
+    if (!r.ok) { console.error("Capta ingest:", r.status, txt); return { ok: false, status: r.status, resposta: txt.slice(0, 200) }; }
+    return { ok: true, status: r.status, resposta: txt.slice(0, 200) };
   } catch (e) {
     console.error("Capta ingest falhou:", e && e.message);
-    return false;
+    return { ok: false, motivo: String(e && e.message).slice(0, 120) };
   }
 }
 
