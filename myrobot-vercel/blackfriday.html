@@ -831,7 +831,7 @@ body{overscroll-behavior-x:none;touch-action:pan-y pinch-zoom}
     /* o lead segue mesmo se a rede falhar: a pessoa nunca fica sem o botão do WhatsApp */
     var feito=false; function uma(){ if(!feito){ feito=true; fim(); } }
     setTimeout(uma,3500);
-    fetch('/api/kommo-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})
+    fetch('/api/lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true})
       .then(uma).catch(function(e){ console.warn('Envio falhou, segue pelo WhatsApp:',e); uma(); });
   });
 })();
