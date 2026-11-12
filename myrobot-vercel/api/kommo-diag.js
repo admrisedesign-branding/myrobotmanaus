@@ -26,6 +26,19 @@ export default async function handler(req, res) {
     } catch (e) { return { erro: String(e && e.message) }; }
   }
 
+  // Única escrita deste endpoint: desinstalar O WIDGET DE WHATSAPP, e só ele.
+  // O code é fixo no código de propósito — nada de aceitar alvo pela query.
+  if (req.query.desinstalar === "amocrm_whatsapp") {
+    try {
+      const r = await fetch(base + "/widgets/amocrm_whatsapp", {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const txt = await r.text();
+      return res.status(200).json({ acao: "desinstalar", status: r.status, resposta: txt.slice(0, 400) });
+    } catch (e) { return res.status(200).json({ acao: "desinstalar", erro: String(e && e.message) }); }
+  }
+
   const conta   = await ler("/account");
   const wid     = await ler("/widgets/amocrm_whatsapp");
   const pipes   = await ler("/leads/pipelines");
