@@ -226,7 +226,20 @@
   // (sem parâmetros na URL), reusa o último evento salvo.
   var _sv = {};
   try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
-  var EVENTO = qs.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
+  // ===== EVENTO ATUAL — único lugar a mudar a cada evento novo =====
+  // O que está configurado aqui VENCE o que ficou salvo no aparelho: em agosto
+  // os tablets continuaram no evento velho porque o localStorage tinha prioridade.
+  var EVENTO_ATUAL = "Feira do Conhecimento — Samsung";
+  var DIAS_ATUAIS  = ["2026-11-16","2026-11-17"];
+  var LOCAL_PADRAO = "Samsung — Lobby Showroom";
+  // como o local aparece na frase do WhatsApp ("...recebido vocês hoje ___")
+  var LOCAL_FRASE  = "na Samsung";
+  var LOCAIS_ATUAIS = {
+    "2026-11-16": "Samsung — Lobby Showroom",
+    "2026-11-17": "Samsung — Lobby Showroom"
+  };
+
+  var EVENTO = qs.get("evento") || EVENTO_ATUAL || _sv.evento;
   // Evento de vários dias: a data é sempre a de HOJE (Manaus, UTC-4).
   // Antes vinha fixa do link/localStorage e travava no primeiro dia.
   var _ag = new Date(Date.now() - 4*3600*1000);
@@ -239,14 +252,8 @@
 
   // O evento troca de shopping entre os dias. Com o app já instalado nos
   // tablets, ninguém precisa reabrir link nenhum: o local sai da data.
-  var LOCAIS_POR_DIA = {
-    "2026-08-19": "Manaus Plaza Shopping",
-    "2026-08-20": "Manaus Plaza Shopping",
-    "2026-08-21": "Manaus Plaza Shopping",
-    "2026-08-22": "Shopping Ponta Negra"
-  };
-  var LOCAL = qs.get("local") || LOCAIS_POR_DIA[HOJE_ISO] || _sv.local
-              || "Manaus Plaza Shopping";
+  var LOCAIS_POR_DIA = LOCAIS_ATUAIS;
+  var LOCAL = qs.get("local") || LOCAIS_POR_DIA[HOJE_ISO] || LOCAL_PADRAO || _sv.local;
   var KEY = qs.get("key") || _sv.key || "myrobot2026";
   var VOUCHER = qs.get("voucher") || _sv.voucher || "150";
   if (qs.get("evento")) {
@@ -343,7 +350,8 @@
     }
 
     // local do evento, sem a parte depois do hífen ("Manaus Plaza Shopping - Centro..." -> "Manaus Plaza Shopping")
-    var localCurto = String(LOCAL || "").split(" - ")[0].trim() || "nosso evento";
+    var localCurto = String(LOCAL || "").split(/\s[-\u2013\u2014]\s/)[0].trim() || "nosso evento";
+    var localFrase = LOCAL_FRASE || ("no " + localCurto);
 
     var tel = digits(d.wn);
     if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
@@ -356,7 +364,7 @@
     var msg = [
       "Oi, " + (primeiro||"") + "! Aqui é a My Robot Manaus 🧡",
       "",
-      "Que bom ter recebido vocês hoje no " + localCurto + ".",
+      "Que bom ter recebido vocês hoje " + localFrase + ".",
       "",
       alunoRef + " " + verbo + " daqui com um voucher de R$ " + VOUCHER + cada +
         " — nosso time te chama pra explicar direitinho como usar.",

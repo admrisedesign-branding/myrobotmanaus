@@ -232,7 +232,17 @@
   // salvo pelo formulário, senão as páginas consultam eventos diferentes.
   let _sv = {};
   try { _sv = JSON.parse(localStorage.getItem("mr_evento") || "{}"); } catch(e){}
-  const EVENTO = params.get("evento") || _sv.evento || "Robô Humanoide - Plaza (19/08)";
+  // ===== EVENTO ATUAL — único lugar a mudar a cada evento novo =====
+  // O que está configurado aqui VENCE o que ficou salvo no aparelho: em agosto
+  // os tablets continuaram no evento velho porque o localStorage tinha prioridade.
+  const EVENTO_ATUAL = "Feira do Conhecimento — Samsung";
+  const DIAS_ATUAIS  = ["2026-11-16","2026-11-17"];
+  const LOCAIS_ATUAIS = {
+    "2026-11-16": "Samsung — Lobby Showroom",
+    "2026-11-17": "Samsung — Lobby Showroom"
+  };
+
+  const EVENTO = params.get("evento") || EVENTO_ATUAL || _sv.evento;
   const KEY = params.get("key") || _sv.key || "myrobot2026";
   if (params.get("evento")) {
     _sv.evento = EVENTO; _sv.key = KEY;
@@ -312,7 +322,7 @@
     var p = qsDias();
     if (p.length) return p;
     try { var s = JSON.parse(localStorage.getItem("mr_evento")||"{}"); if (s.dias && s.dias.length) return s.dias; } catch(e){}
-    return ["2026-08-19","2026-08-20","2026-08-21","2026-08-22"];
+    return DIAS_ATUAIS;
   })();
   function rotuloDia(iso){ var p = iso.split("-"); return p[2]+"/"+p[1]; }
   // o evento muda de shopping entre os dias — mostra o local do dia escolhido
