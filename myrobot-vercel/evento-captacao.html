@@ -58,6 +58,10 @@
     display:flex;align-items:center;justify-content:center;font-size:30px;margin:4px auto 14px;}
   .thanks h2{font-size:21px;margin-bottom:8px;}
   .thanks .p{color:var(--cinza);font-size:14.5px;margin-bottom:18px;}
+  .envio{font-size:13.5px;font-weight:700;margin:0 0 12px;}
+  .envio:empty{display:none;}
+  .envio.envio-ok{color:#00A152;}
+  .envio.envio-falhou{color:#C0392B;}
   .voucher{background:linear-gradient(135deg,#EA5B1E,#FF6A2B);color:#fff;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 8px 20px rgba(234,91,30,.28);}
   .voucher .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;opacity:.9;}
   .voucher .val{font-size:38px;font-weight:900;line-height:1.1;margin:2px 0;}
@@ -214,6 +218,7 @@
       <div class="val">R$ 150</div>
       <div class="sub">Entregue ao cliente e explique o próximo passo 💙</div>
     </div>
+    <div class="envio" id="envioStatus"></div>
     <a class="btn-wa" id="waBtn" href="#" target="_blank" rel="noopener">Enviar boas-vindas no WhatsApp</a>
     <button class="btn-ghost" id="prox">Cadastrar próximo</button>
   </div>
@@ -321,6 +326,8 @@
       fn: (filhos[0] && filhos[0].nome) || "", fi: (filhos[0] && filhos[0].idade) || "",
       rn: rn, wn: wn, bairro: $("bairro").value.trim(),
       evento: EVENTO, local: LOCAL, data: DATA,
+      // o servidor remonta a mensagem de boas-vindas com estes dois
+      voucher: VOUCHER, local_frase: LOCAL_FRASE,
       // LGPD: aceite tocado pelo responsável no app do captador
       consentimento: { contato: true, dados_crianca: true, responsavel: true, versao: "evento-v1",
         texto: document.querySelector(".lgpd-txt").textContent.trim() }
@@ -329,11 +336,11 @@
     $("sending").classList.add("show"); $("sending").style.display="block";
     fetch("/api/kommo-evento", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(dados) })
       .then(function(r){ return r.json(); })
-      .then(function(){ $("sending").style.display="none"; sucesso(dados); })
+      .then(function(j){ $("sending").style.display="none"; sucesso(dados, j && j.boas_vindas); })
       .catch(function(){ $("sending").style.display="none"; sucesso(dados); });
   });
 
-  function sucesso(d){
+  function sucesso(d, envio){
     var primeiro = (d.rn||"").split(" ")[0];
     var frases = ["Lead cadastrado! 🎉", "Boa! Mais um lead 🚀", "Mandou bem! ✨", "Isso! Lead salvo 🎯"];
     $("doneName").textContent = frases[Math.floor(Math.random()*frases.length)];
@@ -374,6 +381,23 @@
     ].join("\n");
 
     $("waBtn").href = "https://wa.me/" + tel + "?text=" + encodeURIComponent(msg);
+
+    // Boas-vindas saem pelo WhatsApp OFICIAL da escola, pelo Capta.
+    // O botão do aparelho só reaparece se esse envio falhar — senão a família
+    // recebia do número pessoal do consultor e respondia fora do Capta.
+    var ok = envio && envio.enviada;
+    var aviso = $("envioStatus");
+    if (aviso) {
+      aviso.className = "envio " + (ok ? "envio-ok" : "envio-falhou");
+      aviso.textContent = ok
+        ? "✓ Boas-vindas enviadas pelo WhatsApp da My Robot"
+        : "⚠ Não saiu pelo número da escola" + (envio && envio.motivo ? " (" + envio.motivo + ")" : "") + " — envie você mesmo:";
+    }
+    $("waBtn").style.display = ok ? "none" : "block";
+    var apoio = document.querySelector("#thanks .p");
+    if (apoio) apoio.textContent = ok
+      ? "Entregue o voucher e já parta pro próximo."
+      : "Mandou bem! Envie as boas-vindas e já parta pro próximo.";
     $("thanks").style.display = "block";
     window.scrollTo(0,0);
   }

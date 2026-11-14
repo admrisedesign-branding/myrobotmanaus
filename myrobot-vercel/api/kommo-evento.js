@@ -228,11 +228,53 @@ export default async function handler(req, res) {
     let capta = null;
     try { capta = await gravarNoCapta(body, leadId); } catch (e) { console.error("Capta:", e.message); }
 
-    return res.status(200).json({ ok: true, feito: { lead: !!leadId, nota: notaOk, capta: !!(capta && capta.ok) }, lead_id: leadId });
+    return res.status(200).json({ ok: true, feito: { lead: !!leadId, nota: notaOk, capta: !!(capta && capta.ok) }, lead_id: leadId, boas_vindas: (capta && capta.boas_vindas) || null });
   } catch (err) {
     console.error("Falha geral:", err);
     return res.status(500).json({ error: String(err) });
   }
+}
+
+
+// ---------------------------------------------------------------------
+// Mensagem de boas-vindas — montada AQUI, no servidor, para sair pelo
+// WhatsApp oficial da escola (via Capta). A versão do navegador continua
+// existindo como plano B manual; as duas precisam dizer a mesma coisa.
+// ---------------------------------------------------------------------
+function montarBoasVindas(dados) {
+  const primeiro = String(dados.rn || "").trim().split(" ")[0];
+  const filhos = Array.isArray(dados.filhos) && dados.filhos.length
+    ? dados.filhos
+    : [{ nome: dados.fn, idade: dados.fi }];
+  const nomes = filhos.map(f => String(f?.nome || "").trim().split(" ")[0]).filter(Boolean);
+
+  let alunoRef, verbo, cada = "";
+  if (!nomes.length)            { alunoRef = "Seu filho(a)"; verbo = "saiu"; }
+  else if (nomes.length === 1)  { alunoRef = nomes[0]; verbo = "saiu"; }
+  else {
+    alunoRef = nomes.slice(0, -1).join(", ") + " e " + nomes[nomes.length - 1];
+    verbo = "saíram"; cada = " cada";
+  }
+
+  const voucher = String(dados.voucher || "150").replace(/\D/g, "") || "150";
+  const localFrase = dados.local_frase || ("no " + String(dados.local || "nosso evento").split(/\s[-\u2013\u2014]\s/)[0].trim());
+
+  let tel = String(dados.wn || "").replace(/\D/g, "");
+  if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
+  const link = "https://www.myrobotmanaus.com/feedback-evento.html?evento="
+    + encodeURIComponent(dados.evento || "") + "&wn=" + tel;
+
+  return [
+    "Oi, " + (primeiro || "") + "! Aqui é a My Robot Manaus 🧡",
+    "",
+    "Que bom ter recebido vocês hoje " + localFrase + ".",
+    "",
+    alunoRef + " " + verbo + " daqui com um voucher de R$ " + voucher + cada +
+      " — nosso time te chama pra explicar direitinho como usar.",
+    "",
+    "E se sobrar 1 minutinho, conta pra gente como foi a experiência de vocês?",
+    link,
+  ].join("\n");
 }
 
 // ---------------------------------------------------------------------
@@ -262,6 +304,9 @@ async function gravarNoCapta(dados, kommoLeadId) {
       evento_local: dados.local || null,
       evento_data: dados.data || null,
       evento_id: process.env.CAPTA_EVENTO || null,
+      // o Capta envia isto pelo número oficial da escola
+      boas_vindas: montarBoasVindas(dados),
+      boas_vindas_imagem: process.env.EVENTO_VOUCHER_IMG || null,
       kommo_lead_id: kommoLeadId || null,
       notas: [
         dados.bairro ? `Bairro: ${dados.bairro}` : null,
