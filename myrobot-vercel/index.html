@@ -3252,7 +3252,12 @@ function validateStep(step) {
   if (step===3) {
     const rn=document.getElementById('respNome'), wn=document.getElementById('whatsapp');
     if(rn && !rn.value.trim()) { showFErr('respNome',rn); ok=false; } else hideFErr('respNome',rn);
-    if(wn && wn.value.trim().length<8) { showFErr('whatsapp',wn); ok=false; } else hideFErr('whatsapp',wn);
+    // Contava CARACTERES do campo já mascarado: "(92) 9996" tem 9 caracteres
+    // e passava. Em 21/09 entrou assim o telefone da Jaqueline — 9 dígitos,
+    // incompleto — e ninguém conseguiu mais falar com ela. Agora conta DÍGITO
+    // e exige número brasileiro inteiro: 10 (fixo) ou 11 (celular com o 9).
+    const wnDig = wn ? wn.value.replace(/\D/g,'') : '';
+    if(wn && (wnDig.length<10 || wnDig.length>11)) { showFErr('whatsapp',wn); ok=false; } else hideFErr('whatsapp',wn);
     const ck=document.getElementById('consentContato');
     if(ck && !ck.checked) { const e=document.getElementById('err-consentContato'); if(e) e.classList.add('show'); ok=false; }
     else { const e=document.getElementById('err-consentContato'); if(e) e.classList.remove('show'); }
