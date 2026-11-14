@@ -3372,9 +3372,12 @@ function submitForm() {
 const wppInput=document.getElementById('whatsapp');
 if(wppInput) wppInput.addEventListener('input',function(){
   let v=this.value.replace(/\D/g,'');
+  // Fixo e celular têm formatos diferentes: 10 dígitos quebram em 4+4,
+  // 11 em 5+4. Antes os dois caíam na mesma régua e um fixo aparecia como
+  // "(92) 32345-678", que faz a pessoa achar que digitou errado.
   if(v.length<=2) v='('+v;
-  else if(v.length<=7) v='('+v.slice(0,2)+') '+v.slice(2);
-  else if(v.length<=11) v='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7);
+  else if(v.length<=6) v='('+v.slice(0,2)+') '+v.slice(2);
+  else if(v.length<=10) v='('+v.slice(0,2)+') '+v.slice(2,6)+'-'+v.slice(6);
   else v='('+v.slice(0,2)+') '+v.slice(2,7)+'-'+v.slice(7,11);
   this.value=v;
 });
