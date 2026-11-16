@@ -105,7 +105,9 @@ export default async function handler(req, res) {
   if (req.method === "OPTIONS") return res.status(200).end();
 
   const token = process.env.KOMMO_TOKEN;
-  if (!token) return res.status(500).json({ error: "KOMMO_TOKEN não configurado na Vercel" });
+  if (!token && String(process.env.KOMMO_ATIVO ?? "1") !== "0") {
+    return res.status(500).json({ error: "KOMMO_TOKEN não configurado na Vercel" });
+  }
 
   // ---- MODO DIAGNÓSTICO: GET ?diag=myrobot2026 lista os campos de lead e as opções ----
   if (req.method === "GET") {
@@ -185,11 +187,16 @@ export default async function handler(req, res) {
       },
     }];
 
-    const r = await fetch(`https://${SUBDOMAIN}.kommo.com/api/v4/leads/complex`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    // KOMMO_ATIVO=0 desliga o Kommo de vez (decisão de 16/11: a escola saiu dele).
+    // O lead passa a existir só no Capta; nada aqui depende mais da resposta dele.
+    const usarKommo = String(process.env.KOMMO_ATIVO ?? "1") !== "0";
+    const r = usarKommo
+      ? await fetch(`https://${SUBDOMAIN}.kommo.com/api/v4/leads/complex`, {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        })
+      : { ok: false, status: 0, json: async () => ({}) };
     const data = await r.json().catch(() => ({}));
     // O Kommo NÃO pode derrubar a captação. Em 16/11 a assinatura venceu e ele
     // passou a responder 402: como a gravação dele vinha primeiro e abortava a
@@ -197,7 +204,7 @@ export default async function handler(req, res) {
     // não recebia nada. Agora a falha dele é registrada e o fluxo segue: quem
     // guarda o lead de verdade é o Capta.
     let kommoErro = null;
-    if (!r.ok) {
+    if (!r.ok && usarKommo) {
       kommoErro = { status: r.status, detalhe: data?.detail || data?.title || null };
       console.error("Kommo erro:", r.status, JSON.stringify(data));
     }

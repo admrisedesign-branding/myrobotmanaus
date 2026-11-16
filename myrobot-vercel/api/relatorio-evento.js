@@ -1,327 +1,155 @@
 // api/relatorio-evento.js
-// Lê os leads de um evento (pela TAG) no Kommo e devolve os dados agregados
-// para o dashboard (relatorio-evento.html). Reutilizável: passe ?evento=NOME
-// da tag do evento (ex.: ?evento=Robô Humanoide - Plaza (19/08)).
+// Lê os leads de um evento NO CAPTA e devolve os dados agregados para o
+// relatorio-evento.html e o leads-evento.html.
 //
-// GET /api/relatorio-evento?evento=<tag>&key=myrobot2026
-// Retorna JSON com: total, porHora, categorias, porConsultor, porBairro,
-// feedback (respondidos, npsMedio, autorizados) e a lista crua (opcional).
+// Antes isso lia o Kommo. Em 16/11/2026 a assinatura do Kommo venceu (402) e a
+// decisão foi sair dele de vez: quem guarda o lead agora é o Capta.
+//
+// O site não tem a chave de serviço do Supabase, então a leitura passa pela
+// função capta_evento_leads(slug, token, evento), que valida o mesmo par
+// slug+ingest_token já usado para gravar e devolve só os leads daquele evento.
+//
+// GET /api/relatorio-evento?evento=<nome>&key=myrobot2026
+//     &debug=1      → o que existe no Capta, sem processar
+const SUPABASE_URL  = process.env.CAPTA_SUPABASE_URL || "https://oaezsozoriqnkurxncjs.supabase.co";
+const SUPABASE_ANON = process.env.CAPTA_SUPABASE_ANON;
+const CAPTA_SLUG    = process.env.CAPTA_SLUG;
+const CAPTA_TOKEN   = process.env.CAPTA_TOKEN;
 
-const SUBDOMAIN   = process.env.KOMMO_SUBDOMAIN || "roboticanorte";
-const PIPELINE_ID = 13965588;
+const MANAUS_OFFSET_MS = 4 * 3600 * 1000;
 
-const FIELD = {
-  score:     3880739,
-  categoria: 3880741,
-  bairro:    3880749,
-  origem:    3880751,
-};
-// campos de feedback (no contato)
-const F_NPS = null; // resolvido por nome abaixo (varia), usamos a nota da timeline como reforço
-const CAT_QUENTE = 4299211;
-
-function getCF(entity, fieldId) {
-  const cf = (entity.custom_fields_values || []).find((f) => f.field_id === fieldId);
-  return cf ? (cf.values?.[0]?.value ?? null) : null;
+async function rpc(nome, args) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${nome}`, {
+    method: "POST",
+    headers: {
+      apikey: SUPABASE_ANON,
+      Authorization: `Bearer ${SUPABASE_ANON}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(args),
+  });
+  const txt = await r.text();
+  if (!r.ok) throw new Error(`Capta ${r.status}: ${txt.slice(0, 200)}`);
+  return txt ? JSON.parse(txt) : [];
 }
-function getCFEnum(entity, fieldId) {
-  const cf = (entity.custom_fields_values || []).find((f) => f.field_id === fieldId);
-  return cf ? (cf.values?.[0]?.enum_id ?? null) : null;
+
+// "Miguel — 9 anos · Sofia — 7 anos" a partir do que o Capta guarda
+function filhoTexto(l) {
+  const nome = String(l.crianca || "").trim();
+  const idade = String(l.idade || "").replace(/\D/g, "");
+  if (!nome && !idade) return "—";
+  return [nome, idade ? `${idade} anos` : ""].filter(Boolean).join(" — ");
+}
+
+// o consultor do estande vai na nota ("Consultor: X"); atendente é o fallback
+function consultorDe(l) {
+  const m = String(l.notas || "").match(/Consultor:\s*(.+)/i);
+  if (m) {
+    const v = m[1].split("\n")[0].trim();
+    if (v && v !== "-") return v;
+  }
+  return l.atendente || "—";
+}
+
+// bairro não é coluna no Capta: ele vai na nota da captação
+function bairroDe(l) {
+  const m = String(l.notas || "").match(/Bairro:\s*(.+)/i);
+  if (!m) return "—";
+  const v = m[1].split("\n")[0].trim();
+  return v && v !== "-" ? v : "—";
+}
+
+function localDe(l) {
+  const m = String(l.notas || "").match(/Local:\s*(.+)/i);
+  if (!m) return "";
+  const v = m[1].split("\n")[0].trim();
+  return v && v !== "-" ? v.split(/\s[-–—]\s/)[0].trim() : "";
 }
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   if (req.method === "OPTIONS") return res.status(200).end();
-
-  const token = process.env.KOMMO_TOKEN;
-  if (!token) return res.status(500).json({ error: "KOMMO_TOKEN não configurado" });
   if ((req.query.key || "") !== "myrobot2026") return res.status(403).json({ error: "key inválida" });
 
-  const eventoTag = String(req.query.evento || "").trim();
-  if (!eventoTag) return res.status(400).json({ error: "informe ?evento=<tag>" });
-
-  const auth = { Authorization: `Bearer ${token}` };
-  const api = `https://${SUBDOMAIN}.kommo.com/api/v4`;
+  const evento = String(req.query.evento || "").trim();
+  if (!evento) return res.status(400).json({ error: "informe ?evento=" });
+  if (!SUPABASE_ANON || !CAPTA_SLUG || !CAPTA_TOKEN) {
+    return res.status(500).json({ error: "Capta não configurado (CAPTA_SUPABASE_ANON / CAPTA_SLUG / CAPTA_TOKEN)" });
+  }
 
   try {
-    const dorme = (ms) => new Promise((r) => setTimeout(r, ms));
+    const leads = await rpc("capta_evento_leads", {
+      p_slug: CAPTA_SLUG,
+      p_token: CAPTA_TOKEN,
+      p_evento: evento,
+    });
 
-    // O Kommo limita a ~7 requisições por segundo. Se estourar, ele responde
-    // 429 e a requisição volta vazia — foi o que zerou os leads. Aqui tentamos
-    // de novo com pausa crescente antes de desistir.
-    async function buscaComRetry(url, tentativas = 4) {
-      let espera = 400;
-      for (let i = 0; i < tentativas; i++) {
-        const r = await fetch(url, { headers: auth });
-        if (r.ok || r.status === 204) return r;
-        if (r.status === 429 || r.status >= 500) { await dorme(espera); espera *= 2; continue; }
-        return r; // 4xx de verdade: não adianta insistir
-      }
-      return null;
-    }
-
-    // 1) Busca os leads do FUNIL (paginando) e filtra pela tag do evento aqui.
-    //    Atenção: filter[tags][0] do Kommo espera o ID numérico da tag, não o
-    //    nome — passar o nome devolvia lista vazia sempre. Por isso o filtro
-    //    pelo nome da tag é feito no código, abaixo.
-    let leads = [];
-    let page = 1;
-    for (;;) {
-      const url = `${api}/leads?filter[pipeline_id]=${PIPELINE_ID}`
-        + `&with=contacts&limit=250&page=${page}`;
-      const r = await buscaComRetry(url);
-      if (!r || !r.ok) {
-        // Falhar aqui e seguir devolvia ok:true com lista vazia — a tela
-        // "zerava". Melhor devolver erro pro app manter os dados em cache.
-        if (page === 1) {
-          return res.status(502).json({
-            ok: false,
-            error: "Kommo não respondeu ao listar os leads (possível limite de requisições). Tente atualizar de novo.",
-          });
-        }
-        break; // já temos as páginas anteriores
-      }
-      const data = await r.json().catch(() => ({}));
-      const batch = data?._embedded?.leads || [];
-      leads = leads.concat(batch);
-      if (batch.length < 250) break;
-      page++;
-      if (page > 20) break; // trava de segurança
-      await dorme(120);
-    }
-
-    const totalFunil = leads.length;
-    const tagsDoLead = (l) => (l._embedded?.tags || []).map((t) => String(t.name || ""));
-    const todasTags = new Set();
-    leads.forEach((l) => tagsDoLead(l).forEach((t) => todasTags.add(t)));
-
-    // a gravação corta a tag em 40 caracteres (ver api/kommo-evento.js),
-    // então comparamos também com o nome cortado
-    const alvo = eventoTag.toLowerCase();
-    const alvoCurto = alvo.slice(0, 40);
-    leads = leads.filter((l) =>
-      tagsDoLead(l).some((t) => {
-        const n = t.toLowerCase();
-        return n === alvo || n === alvoCurto;
-      })
-    );
-
-    // ?debug=1 -> mostra o que existe no funil, sem processar nada
-    // ?debug=campos -> mostra os campos crus do lead e do contato (pra achar
-    //                  por que o feedback ou o filho não aparecem no card)
     if (req.query.debug) {
-      const base = {
+      return res.status(200).json({
         ok: true,
         debug: true,
-        eventoProcurado: eventoTag,
-        leadsNoFunil: totalFunil,
-        leadsComEssaTag: leads.length,
-        tagsExistentesNoFunil: Array.from(todasTags).sort(),
-      };
-      if (String(req.query.debug) !== "campos") return res.status(200).json(base);
-
-      // catálogo de campos de LEAD da conta (id + nome + tipo), pra conferir
-      // se o FIELD.filho usado na gravação é mesmo o campo certo
-      const catalogo = [];
-      let cp = 1;
-      while (cp <= 10) {
-        const cr = await fetch(`${api}/leads/custom_fields?limit=250&page=${cp}`, { headers: auth });
-        if (cr.status === 204 || !cr.ok) break;
-        const cd = await cr.json().catch(() => ({}));
-        const cfs = cd?._embedded?.custom_fields || [];
-        if (!cfs.length) break;
-        cfs.forEach((f) => catalogo.push({ id: f.id, nome: f.name, tipo: f.type }));
-        if (!cd?._links?.next) break;
-        cp++;
-      }
-
-      const amostra = [];
-      for (const l of leads.slice(0, 5)) {
-        const cRef = (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
-        let camposContato = null, contatoId = null;
-        if (cRef) {
-          contatoId = cRef.id;
-          const cr = await fetch(`${api}/contacts/${cRef.id}`, { headers: auth });
-          if (cr.ok) {
-            const c = await cr.json().catch(() => ({}));
-            camposContato = (c.custom_fields_values || []).map((f) => ({
-              nome: f.field_name, code: f.field_code, valor: f.values?.[0]?.value,
-            }));
-          }
-        }
-        amostra.push({
-          leadId: l.id,
-          leadNome: l.name,
-          contatoId,
-          camposDoLead: (l.custom_fields_values || []).map((f) => ({
-            id: f.field_id, nome: f.field_name, valor: f.values?.[0]?.value,
-          })),
-          camposDoContato: camposContato,
-        });
-      }
-      return res.status(200).json({ ...base, camposDeLeadDaConta: catalogo, amostra });
+        eventoProcurado: evento,
+        leadsNoEvento: leads.length,
+        amostra: leads.slice(0, 3),
+      });
     }
 
-    // 2) Agrega + monta a lista detalhada por lead
-    const porHora = {};
-    const porDia = {};
+    const porHora = {}, porDia = {}, porConsultor = {}, porBairro = {};
     const categorias = { Quente: 0, Morno: 0, Outro: 0 };
-    const porBairro = {};
-    const porConsultor = {};
-    let respondidos = 0, somaNps = 0, autorizados = 0;
     const lista = [];
+    let respondidos = 0, somaNps = 0, qtdNps = 0, autorizados = 0;
 
-    // cache de contatos já lidos (um contato pode servir a mais de um lead)
-    const contatoCache = {};
-    async function lerContato(cid) {
-      if (contatoCache[cid] !== undefined) return contatoCache[cid];
-      const cr = await fetch(`${api}/contacts/${cid}`, { headers: auth });
-      if (!cr.ok) { contatoCache[cid] = null; return null; }
-      const c = await cr.json().catch(() => ({}));
-      contatoCache[cid] = c;
-      return c;
-    }
-
-    const leadsProc = leads.slice(0, 500); // trava de segurança
-
-    // ---- pré-carga em PARALELO ----------------------------------------
-    // Antes eram 2 requisições sequenciais por lead (contato + notas): com 25
-    // leads davam 50 idas e voltas em fila, ~15s. Agora vão de 12 em 12.
-    async function emLotes(itens, tamanho, fn) {
-      for (let i = 0; i < itens.length; i += tamanho) {
-        await Promise.all(itens.slice(i, i + tamanho).map(fn));
-        if (i + tamanho < itens.length) await dorme(180); // fica abaixo de ~7 req/s
-      }
-    }
-
-    const contatoDe = (l) =>
-      (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
-
-    const idsContato = [...new Set(leadsProc.map((l) => contatoDe(l)?.id).filter(Boolean))];
-    const contatos = {};
-    await emLotes(idsContato, 4, async (id) => {
-      try {
-        const r = await buscaComRetry(`${api}/contacts/${id}`);
-        contatos[id] = (r && r.ok) ? await r.json().catch(() => null) : null;
-      } catch (e) { contatos[id] = null; }
-    });
-
-    const notas = {};
-    await emLotes(leadsProc.map((l) => l.id), 4, async (id) => {
-      try {
-        const r = await buscaComRetry(`${api}/leads/${id}/notes?limit=50`);
-        const d = (r && r.ok) ? await r.json().catch(() => ({})) : {};
-        notas[id] = d?._embedded?.notes || [];
-      } catch (e) { notas[id] = []; }
-    });
-    // -------------------------------------------------------------------
-
-    for (const l of leadsProc) {
-      // horário (Manaus UTC-4)
-      const ts = (l.created_at || 0) * 1000;
-      const d = new Date(ts - 4 * 3600 * 1000);
-      const hh = d.getUTCHours();
-      const mm = d.getUTCMinutes();
-      const hk = String(hh).padStart(2, "0");
-      porHora[hk] = (porHora[hk] || 0) + 1;
-      const horaLabel = `${hk}:${String(mm).padStart(2, "0")}`;
-
-      // dia da captação (evento de vários dias) — vem do created_at do Kommo,
-      // então leads antigos já ficam datados corretamente, sem retrabalho
+    for (const l of leads) {
+      // tudo no fuso de Manaus: o dia do evento é o dia de lá, não UTC
+      const d = new Date(new Date(l.criado_em).getTime() - MANAUS_OFFSET_MS);
+      const hh = String(d.getUTCHours()).padStart(2, "0");
+      const mm = String(d.getUTCMinutes()).padStart(2, "0");
       const dd = String(d.getUTCDate()).padStart(2, "0");
       const mo = String(d.getUTCMonth() + 1).padStart(2, "0");
-      const diaLabel = `${dd}/${mo}`;
       const diaISO = `${d.getUTCFullYear()}-${mo}-${dd}`;
+
+      porHora[String(Number(hh))] = (porHora[String(Number(hh))] || 0) + 1;
       porDia[diaISO] = (porDia[diaISO] || 0) + 1;
 
-      // categoria
-      const catEnum = getCFEnum(l, FIELD.categoria);
-      let categoria = "—";
-      if (catEnum === CAT_QUENTE) { categorias.Quente++; categoria = "Quente"; }
-      else if (catEnum) { categorias.Morno++; categoria = "Morno"; }
-      else categorias.Outro++;
+      const categoria = /quente/i.test(l.temperatura || "") ? "Quente"
+                      : /morno/i.test(l.temperatura || "") ? "Morno" : "Outro";
+      categorias[categoria]++;
 
-      // bairro + filho
-      const bairro = (getCF(l, FIELD.bairro) || "—").trim() || "—";
-      porBairro[bairro] = (porBairro[bairro] || 0) + 1;
-      const filho = getCF(l, FIELD.filho) || "—";
-
-      // telefone + nome do responsável (do contato principal)
-      const contatoRef = (l._embedded?.contacts || []).find((x) => x.is_main) || (l._embedded?.contacts || [])[0];
-      let telefone = "—", responsavel = "—", nps = null, comentario = "", autoriza = false, deuFeedback = false;
-      if (contatoRef) {
-        const c = contatos[contatoRef.id];
-        if (c) {
-          responsavel = c.name || "—";
-          const cfs = c.custom_fields_values || [];
-          const byName = (nome) => cfs.find((f) => (f.field_name || "").toLowerCase() === nome);
-          const byCode = (code) => cfs.find((f) => f.field_code === code);
-          const tel = byCode("PHONE");
-          if (tel) telefone = tel.values?.[0]?.value || "—";
-          const npsF = byName("nps");
-          const depoF = byName("depoimento");
-          const autF = byName("autoriza uso do depoimento");
-          if (npsF && npsF.values?.[0]?.value != null) { nps = Number(npsF.values[0].value); deuFeedback = true; }
-          if (depoF && depoF.values?.[0]?.value) { comentario = String(depoF.values[0].value); deuFeedback = true; }
-          if (autF && autF.values?.[0]?.value === true) autoriza = true;
-          if (deuFeedback) {
-            respondidos++;
-            if (nps != null) somaNps += nps;
-            if (autoriza) autorizados++;
-          }
-        }
-      }
-
-      // consultor e filho(s): estão na nota "CAPTAÇÃO EM EVENTO"
-      // (o filho vem do campo do lead; se vier vazio, cai pra nota)
-      let consultor = "—";
-      let filhoNota = "";
-      {
-        for (const n of (notas[l.id] || [])) {
-          const txt = n.params?.text || "";
-          if (consultor === "—") {
-            const m = txt.match(/Consultor:\s*(.+)/i);
-            if (m) consultor = m[1].split("\n")[0].trim() || "—";
-          }
-          if (!filhoNota) {
-            const f = txt.match(/Aluno\(s\):\s*(.+)/i) || txt.match(/Aluno:\s*(.+)/i);
-            if (f) {
-              const v = f[1].split("\n")[0].trim();
-              if (v && v !== "-") filhoNota = v;
-            }
-          }
-          if (consultor !== "—" && filhoNota) break;
-        }
-      }
-      const filhoFinal = (filho && filho !== "—") ? filho : (filhoNota || "—");
+      const consultor = consultorDe(l);
       porConsultor[consultor] = (porConsultor[consultor] || 0) + 1;
+      const bairro = bairroDe(l);
+      if (bairro !== "—") porBairro[bairro] = (porBairro[bairro] || 0) + 1;
+
+      const deuFeedback = l.respondida_em != null;
+      const nps = typeof l.nps === "number" ? l.nps : null;
+      if (deuFeedback) {
+        respondidos++;
+        if (nps != null) { somaNps += nps; qtdNps++; }
+        if (l.comentario) autorizados++;
+      }
 
       lista.push({
         id: l.id,
-        hora: horaLabel,
-        dia: diaLabel,
+        hora: `${hh}:${mm}`,
+        dia: `${dd}/${mo}`,
         diaISO,
-        responsavel,
-        filho: filhoFinal,
-        telefone,
+        local: localDe(l),
+        responsavel: l.nome || "—",
+        filho: filhoTexto(l),
+        telefone: l.contato || "—",
         bairro,
         categoria,
         consultor,
         deuFeedback,
         nps,
-        comentario,
-        autoriza,
+        comentario: l.comentario || null,
+        autoriza: !!l.comentario,
       });
     }
-    const npsMedio = respondidos ? (somaNps / respondidos) : 0;
-
-    // ordena a lista por horário (mais recente primeiro)
-    lista.sort((a, b) => (b.id || 0) - (a.id || 0));
 
     return res.status(200).json({
       ok: true,
-      evento: eventoTag,
+      evento,
       total: leads.length,
       porHora,
       porDia,
@@ -330,14 +158,14 @@ export default async function handler(req, res) {
       porBairro,
       feedback: {
         respondidos,
-        npsMedio: Math.round(npsMedio * 10) / 10,
+        npsMedio: qtdNps ? Math.round((somaNps / qtdNps) * 10) / 10 : null,
         autorizados,
         taxaResposta: leads.length ? Math.round((respondidos / leads.length) * 100) : 0,
       },
       lista,
     });
   } catch (err) {
-    console.error("relatorio erro:", err);
-    return res.status(500).json({ error: String(err) });
+    console.error("relatorio-evento:", err.message);
+    return res.status(502).json({ error: String(err.message || err) });
   }
 }
