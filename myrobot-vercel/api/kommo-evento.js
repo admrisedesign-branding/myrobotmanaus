@@ -271,24 +271,41 @@ function montarBoasVindas(dados) {
   }
 
   const voucher = String(dados.voucher || "150").replace(/\D/g, "") || "150";
-  const localFrase = dados.local_frase || ("no " + String(dados.local || "nosso evento").split(/\s[-\u2013\u2014]\s/)[0].trim());
+  const localFrase = dados.local_frase
+    || ("no " + String(dados.local || "nosso evento").split(/\s[-\u2013\u2014]\s/)[0].trim());
 
+  // Três mensagens seguidas em vez de um balão só: primeiro o obrigado,
+  // depois o voucher aparecendo, e só então o que fazer com ele. O pedido de
+  // feedback saiu daqui — vai à noite, quando a família já está em casa.
+  return [
+    { texto: "Oi, " + (primeiro || "") + "! 🧡 Aqui é a My Robot Manaus.\n\nQue bom ter recebido vocês hoje " + localFrase + "!" },
+    { url: process.env.EVENTO_VOUCHER_IMG || null },
+    { texto: alunoRef + " " + verbo + " daqui com um voucher de R$ " + voucher + cada +
+             " de desconto na matrícula 🤖\n\nNosso time te chama pra explicar direitinho como usar." },
+  ].filter(p => p.texto || p.url);
+}
+
+// Fallback: balão único (comportamento anterior), caso o Capta ainda não
+// entenda a sequência. Aqui o pedido de feedback vai junto, porque nessa
+// versão o disparo da noite não existe.
+function montarBoasVindasUnica(dados) {
+  const textos = montarBoasVindas(dados).filter(p => p.texto).map(p => p.texto);
+  return textos.join("\n\n")
+    + "\n\nE se sobrar 1 minutinho, conta pra gente como foi a experiência de vocês?\n"
+    + linkFeedback(dados);
+}
+
+// Pedido de feedback: mandado à noite pelo Capta, não na hora da captação.
+function linkFeedback(dados) {
   let tel = String(dados.wn || "").replace(/\D/g, "");
   if (tel.length >= 10 && tel.length <= 11) tel = "55" + tel;
-  const link = "https://www.myrobotmanaus.com/feedback-evento.html?evento="
+  return "https://www.myrobotmanaus.com/feedback-evento.html?evento="
     + encodeURIComponent(dados.evento || "") + "&wn=" + tel;
+}
 
-  return [
-    "Oi, " + (primeiro || "") + "! Aqui é a My Robot Manaus 🧡",
-    "",
-    "Que bom ter recebido vocês hoje " + localFrase + ".",
-    "",
-    alunoRef + " " + verbo + " daqui com um voucher de R$ " + voucher + cada +
-      " — nosso time te chama pra explicar direitinho como usar.",
-    "",
-    "E se sobrar 1 minutinho, conta pra gente como foi a experiência de vocês?",
-    link,
-  ].join("\n");
+function montarFeedback(dados) {
+  const primeiro = String(dados.rn || "").trim().split(" ")[0];
+  return "Oi" + (primeiro ? ", " + primeiro : "") + "! 🧡 Passando só pra saber como foi a experiência de vocês com a gente hoje.\n\nLeva 1 minutinho e ajuda demais:\n" + linkFeedback(dados);
 }
 
 // ---------------------------------------------------------------------
@@ -318,8 +335,13 @@ async function gravarNoCapta(dados, kommoLeadId) {
       evento_local: dados.local || null,
       evento_data: dados.data || null,
       evento_id: process.env.CAPTA_EVENTO || null,
-      // o Capta envia isto pelo número oficial da escola
-      boas_vindas: montarBoasVindas(dados),
+      // O Capta envia pelo número oficial da escola. Mandamos os DOIS formatos:
+      // a versão nova lê `boas_vindas_partes` (3 mensagens + feedback à noite);
+      // uma versão antiga ignora isso e cai no balão único com a imagem — que
+      // é o comportamento de hoje. Assim a ordem dos deploys não importa.
+      boas_vindas_partes: montarBoasVindas(dados),
+      feedback_texto: montarFeedback(dados),
+      boas_vindas: montarBoasVindasUnica(dados),
       boas_vindas_imagem: process.env.EVENTO_VOUCHER_IMG || null,
       kommo_lead_id: kommoLeadId || null,
       notas: [
