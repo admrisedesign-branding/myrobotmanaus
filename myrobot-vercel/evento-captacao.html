@@ -336,8 +336,29 @@
     $("sending").classList.add("show"); $("sending").style.display="block";
     fetch("/api/kommo-evento", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(dados) })
       .then(function(r){ return r.json(); })
-      .then(function(j){ $("sending").style.display="none"; sucesso(dados, j && j.boas_vindas); })
-      .catch(function(){ $("sending").style.display="none"; sucesso(dados); });
+      .then(function(j){
+        $("sending").style.display="none";
+        // Nada salvo = NÃO mostrar "cadastrado". Fica no formulário, com os
+        // dados preenchidos, pra pessoa tentar de novo — era assim que o lead
+        // sumia sem ninguém perceber.
+        if (j && j.ok === false) {
+          $("form-view").style.display = "block";
+          var e = $("err");
+          e.textContent = "Não consegui salvar esse lead. Confira o sinal e toque em Cadastrar de novo.";
+          e.style.display = "block";
+          e.scrollIntoView({ block: "center" });
+          return;
+        }
+        sucesso(dados, j && j.boas_vindas);
+      })
+      .catch(function(){
+        $("sending").style.display="none";
+        $("form-view").style.display = "block";
+        var e = $("err");
+        e.textContent = "Sem resposta do servidor. Confira o sinal e toque em Cadastrar de novo.";
+        e.style.display = "block";
+        e.scrollIntoView({ block: "center" });
+      });
   });
 
   function sucesso(d, envio){

@@ -191,13 +191,19 @@ export default async function handler(req, res) {
       body: JSON.stringify(payload),
     });
     const data = await r.json().catch(() => ({}));
+    // O Kommo NÃO pode derrubar a captação. Em 16/11 a assinatura venceu e ele
+    // passou a responder 402: como a gravação dele vinha primeiro e abortava a
+    // requisição, o lead não ia pro Kommo NEM pro Capta — sumia, e a família
+    // não recebia nada. Agora a falha dele é registrada e o fluxo segue: quem
+    // guarda o lead de verdade é o Capta.
+    let kommoErro = null;
     if (!r.ok) {
+      kommoErro = { status: r.status, detalhe: data?.detail || data?.title || null };
       console.error("Kommo erro:", r.status, JSON.stringify(data));
-      return res.status(502).json({ error: "Kommo recusou", status: r.status, data });
     }
 
     // Pega o lead_id criado pra anexar a nota do evento
-    const leadId = data?._embedded?.leads?.[0]?.id || data?.[0]?.id;
+    const leadId = r.ok ? (data?._embedded?.leads?.[0]?.id || data?.[0]?.id) : null;
     let notaOk = false;
     if (leadId) {
       const linhas = [
@@ -228,7 +234,15 @@ export default async function handler(req, res) {
     let capta = null;
     try { capta = await gravarNoCapta(body, leadId); } catch (e) { console.error("Capta:", e.message); }
 
-    return res.status(200).json({ ok: true, feito: { lead: !!leadId, nota: notaOk, capta: !!(capta && capta.ok) }, lead_id: leadId, boas_vindas: (capta && capta.boas_vindas) || null });
+    const salvou = !!(capta && capta.ok) || !!leadId;
+    return res.status(salvou ? 200 : 502).json({
+      ok: salvou,
+      feito: { lead: !!leadId, nota: notaOk, capta: !!(capta && capta.ok) },
+      lead_id: leadId,
+      kommo_erro: kommoErro,
+      boas_vindas: (capta && capta.boas_vindas) || null,
+      error: salvou ? undefined : "Não consegui salvar o lead em nenhum sistema",
+    });
   } catch (err) {
     console.error("Falha geral:", err);
     return res.status(500).json({ error: String(err) });
