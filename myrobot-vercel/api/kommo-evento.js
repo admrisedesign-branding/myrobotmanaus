@@ -239,7 +239,7 @@ export default async function handler(req, res) {
 
     // ---- grava também no Capta (não bloqueia o cadastro se falhar) ----
     let capta = null;
-    try { capta = await gravarNoCapta(body, leadId); } catch (e) { console.error("Capta:", e.message); }
+    try { capta = await gravarNoCapta(b, leadId); } catch (e) { console.error("Capta:", e.message); }
 
     const salvou = !!(capta && capta.ok) || !!leadId;
     return res.status(salvou ? 200 : 502).json({
