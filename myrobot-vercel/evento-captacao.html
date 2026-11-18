@@ -66,6 +66,14 @@
   .voucher .lbl{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;opacity:.9;}
   .voucher .val{font-size:38px;font-weight:900;line-height:1.1;margin:2px 0;}
   .voucher .sub{font-size:13px;opacity:.95;}
+  .conf-num{position:fixed;inset:0;background:rgba(15,20,35,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+  .conf-num.show{display:flex}
+  .cf-caixa{background:#fff;width:100%;max-width:520px;border-radius:20px 20px 0 0;padding:24px 20px calc(20px + env(safe-area-inset-bottom));text-align:center}
+  .cf-tit{font-size:18px;font-weight:800;margin-bottom:6px}
+  .cf-dica{font-size:14px;color:#6b7280;margin-bottom:16px}
+  .cf-num{font-size:34px;font-weight:800;letter-spacing:.02em;padding:14px 8px;border:2px dashed var(--laranja);border-radius:14px;margin-bottom:12px;font-variant-numeric:tabular-nums}
+  .cf-aviso{display:none;background:#FFF4E5;color:#8A5A04;border-radius:10px;padding:10px 12px;font-size:14px;margin-bottom:12px;text-align:left}
+  .cf-corrigir{display:block;width:100%;margin-top:10px;background:none;border:0;color:#6b7280;font:inherit;font-weight:700;font-size:15px;padding:12px;cursor:pointer}
   .btn-wa{display:block;width:100%;margin-top:10px;background:#25D366;color:#fff;text-decoration:none;
     border-radius:11px;padding:14px;font-size:15.5px;font-weight:800;text-align:center;}
   .btn-ghost{width:100%;margin-top:10px;background:#fff;border:1.5px solid var(--borda);color:var(--escuro);
@@ -202,6 +210,18 @@
     <div class="foot">My Robot Manaus · O futuro é aqui</div>
   </div>
 
+  <!-- CONFERIR O NÚMERO -->
+  <div class="conf-num" id="confNum" role="dialog" aria-modal="true" aria-labelledby="cfTit">
+    <div class="cf-caixa">
+      <div class="cf-tit" id="cfTit">Confira o WhatsApp com <span id="cfNome"></span></div>
+      <div class="cf-dica">Leia o número em voz alta, devagar. O voucher vai para ele.</div>
+      <div class="cf-num" id="cfNum"></div>
+      <div class="cf-aviso" id="cfAviso">⚠️ Esse número parece incompleto. Celular de Manaus tem 9 dígitos depois do (92).</div>
+      <button type="button" class="send" id="cfOk">✓ Está certo, enviar voucher</button>
+      <button type="button" class="cf-corrigir" id="cfCorrigir">Corrigir o número</button>
+    </div>
+  </div>
+
   <!-- ENVIANDO -->
   <div class="sending" id="sending">
     <div class="spin"></div>
@@ -318,6 +338,38 @@
     $("err").style.display = "none";
     if (!$("consent").checked) { $("errConsent").style.display = "block"; return; }
     $("errConsent").style.display = "none";
+    confirmarNumero(wn, rn);
+  });
+
+  // Antes de mandar o voucher, o número aparece grande para conferir com a
+  // família. Em 17/11 um dígito trocado mandou voucher e pesquisa para uma
+  // senhora que nunca foi ao evento.
+  function foneBonito(w){
+    var d = digits(w); if (d.length >= 12 && d.indexOf("55") === 0) d = d.slice(2);
+    if (d.length === 11) return "(" + d.slice(0,2) + ") " + d.slice(2,7) + "-" + d.slice(7);
+    if (d.length === 10) return "(" + d.slice(0,2) + ") " + d.slice(2,6) + "-" + d.slice(6);
+    return w;
+  }
+  function confirmarNumero(wn, rn){
+    var d = digits(wn); if (d.length >= 12 && d.indexOf("55") === 0) d = d.slice(2);
+    var estranho = !(d.length === 11 && d.charAt(2) === "9");
+    $("cfNum").textContent = foneBonito(wn);
+    $("cfNome").textContent = rn.split(" ")[0] || "o responsável";
+    $("cfAviso").style.display = estranho ? "block" : "none";
+    $("confNum").classList.add("show");
+  }
+  $("cfCorrigir").addEventListener("click", function(){
+    $("confNum").classList.remove("show");
+    var w = $("wn"); w.focus(); try { w.setSelectionRange(w.value.length, w.value.length); } catch(e){}
+  });
+  $("cfOk").addEventListener("click", function(){
+    $("confNum").classList.remove("show");
+    enviarCadastro();
+  });
+
+  function enviarCadastro(){
+    var rn = $("rn").value.trim();
+    var wn = $("wn").value.trim();
     var filhos = lerFilhos();
     var dados = {
       consultor: $("consultor").value.trim(),
@@ -359,7 +411,7 @@
         e.style.display = "block";
         e.scrollIntoView({ block: "center" });
       });
-  });
+  }
 
   function sucesso(d, envio){
     var primeiro = (d.rn||"").split(" ")[0];

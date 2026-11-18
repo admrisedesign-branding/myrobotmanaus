@@ -248,6 +248,7 @@ export default async function handler(req, res) {
       lead_id: leadId,
       kommo_erro: kommoErro,
       boas_vindas: (capta && capta.boas_vindas) || null,
+      corrigido: (capta && capta.corrigido) || null,
       error: salvou ? undefined : "Não consegui salvar o lead em nenhum sistema",
     });
   } catch (err) {
